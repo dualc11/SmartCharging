@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.luis.smartcharging.StartAndStopService">
+
+    <Button
+        android:id="@+id/bIniciarViagem"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="Iniciar Viagem"
+        android:onClick="iniciarServico"/>
+
+    <Button
+        android:id="@+id/bPararViagem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Finalizar Viagem"
+        android:onClick="pararServico"/>
+
+    <Button
+        android:id="@+id/bRegKmsDiarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Registar Kms Diários"
+        android:onClick="guardaKmsDiários"/>
+
+    <Button
+        android:id="@+id/bIdentificarCarro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Identificar Tuc-Tuc"
+        android:onClick="qrCode"/>
+
+</LinearLayout>
