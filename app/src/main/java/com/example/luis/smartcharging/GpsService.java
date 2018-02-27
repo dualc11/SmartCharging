@@ -22,10 +22,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * Created by luis on 25-02-2018.
- */
-
 public class GpsService  extends Service implements LocationListener {
 
     // Location Variables

@@ -10,10 +10,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-/**
- * Created by luis on 25-02-2018.
- */
-
 public class DBManager {
 
     private static final String MODULE = "Db Manager";
@@ -46,16 +42,14 @@ public class DBManager {
 
     private static final String TABLE_REGISTO_DIARIO="RegistoDiario";
     private static final String DISTANCIADIARIA="distanciaDiariaKm";
+    private static final String USERID="UserId";
 
     private static final String CREATE_TABLE_REGISTO="CREATE TABLE "+TABLE_REGISTO_DIARIO+
-            "("+DATA+" STRING,"+DISTANCIADIARIA+" DOUBLE)";
+            "("+DATA+" STRING,"+DISTANCIADIARIA+" DOUBLE, "+USERID+" STRING "+")";
 
     private static SQLiteDatabase db;
 
     public DBManager() {
-
-        //File test  = new File(Environment.getExternalStorageDirectory() + "/documents/");
-        //String[] test2 = test.list();
 
         try {
             if (db == null)
@@ -316,16 +310,12 @@ public class DBManager {
         //Caso ainda não haja um registo diário para o dia actual
         if(!(c1.moveToFirst()) || c1.getCount()==0)
         {
-            Log.i("sdf","CHEGUEI AQUI");
             Cursor c;
             c = db.rawQuery("SELECT SUM("+DISTANCIAKM+") FROM "+TABLE_VIAGEM_INFO+" WHERE "+DATA+"='"+dataActual+"'", null);
-            //c=db.rawQuery("SELECT distanciaKm From ViagemInfo Where viagemId=1",null);
-            Log.i("sdf","SELECT SUM("+DISTANCIAKM+") FROM "+TABLE_VIAGEM_INFO+" WHERE "+DATA+"='"+dataActual+"'");
 
             double distanciaDiaria =0;
             Log.i("ssdf",Integer.toString(c.getCount()));
 
-            //c.moveToFirst();
             if(c.getCount()>0) {
                 c.moveToPosition(c.getCount() - 1);
                 distanciaDiaria = c.getDouble(0);
@@ -336,9 +326,9 @@ public class DBManager {
             db.beginTransaction();
 
             try{
-                String sql = "INSERT INTO "+TABLE_REGISTO_DIARIO+"("+DATA+","+DISTANCIADIARIA+")"+
-                        "VALUES('"+dataActual+"',"+distanciaDiaria+")";
-                Log.i("sdf",sql);
+                String sql = "INSERT INTO "+TABLE_REGISTO_DIARIO+"("+DATA+","+DISTANCIADIARIA+","+
+                USERID+")"+
+                        "VALUES('"+dataActual+"',"+distanciaDiaria+",'"+StartAndStopService.getUserId()+"')";
 
                 stm = db.compileStatement(sql);
 

@@ -16,6 +16,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -30,4 +34,7 @@ dependencies {
     compile 'com.google.android.gms:play-services:10.2.1'
     compile 'com.google.android.gms:play-services-location:9.2.0'
     compile 'com.journeyapps:zxing-android-embedded:3.4.0'
+
+    //Mudei aqui
+    compile 'com.github.karanchuri:PermissionManager:0.1.0'
 }
