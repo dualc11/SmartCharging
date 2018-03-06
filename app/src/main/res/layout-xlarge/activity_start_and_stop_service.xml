@@ -19,8 +19,8 @@
         android:id="@+id/bPararViagem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Finalizar Viagem"
-        android:onClick="pararServico"/>
+        android:onClick="pararServico"
+        android:text="Finalizar Viagem" />
 
     <Button
         android:id="@+id/bRegKmsDiarios"
@@ -33,7 +33,7 @@
         android:id="@+id/bIdentificarCarro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Identificar Tuc-Tuc"
-        android:onClick="qrCode"/>
+        android:onClick="qrCode"
+        android:text="Identificar Tuc-Tuc" />
 
 </LinearLayout>

@@ -1,49 +1,26 @@
 package com.example.luis.smartcharging;
 
-import android.*;
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.karan.churi.PermissionManager.PermissionManager;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.security.Permission;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static android.app.PendingIntent.getActivity;
 
 public class StartAndStopService extends AppCompatActivity {
 
@@ -59,6 +36,7 @@ public class StartAndStopService extends AppCompatActivity {
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
     private static String userId;
+    private static Context context;
 
 
     @Override
@@ -71,7 +49,7 @@ public class StartAndStopService extends AppCompatActivity {
         sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-        //Verifica as permissões
+        //Verifica as permissões - não avança até que todas as permissões forem cedidas
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
         {
               pedePermissoes();
@@ -91,8 +69,11 @@ public class StartAndStopService extends AppCompatActivity {
         if(!userIdRegistado()) {
             registoUserId();
         }
+
+        context=getApplicationContext();
     }
 
+    //Terminamos o serviço para este não continuar activo quando a aplicação é fechada
     @Override
     protected void onDestroy()
     {
@@ -104,6 +85,12 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
+    /*public void getVolleyRequest(View v)
+    {
+        VolleyRequest.postRequest();
+    }*/
+
+    //Método para iniciar uma rota
     public void iniciarServico(View v)
     {
         if(reconheceuQrCode)
@@ -124,8 +111,8 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
-    public void pararServico(View v)
-    {
+    //Método para terminar uma rota
+    public void pararServico(View v) throws JSONException {
         if(intent!=null)
         {
             double kmViagem=0;
@@ -151,6 +138,7 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
+    //Este método é usado para guardar o total de kms diários que um determinado condutor fez
     public void guardaKmsDiários(View v)
     {
         if(!GpsService.getServicoIniciado()) {
@@ -166,7 +154,7 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
-    //Getting the scan results
+    //Este método é chamado automaticamente quando o objeto qrCode é inicializado no método qrCode().
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -203,6 +191,7 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
+    //Para inicializar o objeto que vai ser usado para ler o qrCode
     public void qrCode(View v)
     {
         if(!GpsService.getServicoIniciado())
@@ -216,7 +205,7 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
-    //Métodos para a verificação das permissões.
+    //Métodos para a verificação das permissões, mostra um alert para cada permissão que ainda não foi cedida
 
     public void pedePermissoes()
     {
@@ -228,6 +217,7 @@ public class StartAndStopService extends AppCompatActivity {
                 android.Manifest.permission.READ_PHONE_STATE},PERMISSOES);
     }
 
+    //Este método é chamado automaticamente quando é feito o "requestPermissions(...) dentro do método pedePermissoes()
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
         boolean concedidas = true;
@@ -322,6 +312,7 @@ public class StartAndStopService extends AppCompatActivity {
                                     {
                                         editor.putString("UserIdentificador", input.getText().toString());
                                         editor.apply();
+                                        userId=sharedPref.getString("UserIdentificador",null);
                                     }
                                 }).show();
                     }
@@ -329,6 +320,7 @@ public class StartAndStopService extends AppCompatActivity {
         );
     }
 
+    //Método para verificar se o user já se registou
     public boolean userIdRegistado()
     {
         userId=sharedPref.getString("UserIdentificador",null);
@@ -341,11 +333,12 @@ public class StartAndStopService extends AppCompatActivity {
             return false;
         }
     }
-
+    //Métodos getters
     public static String getUserId() {return userId;}
     public static DBManager getDb()
     {
         return db;
     }
     public static int getIdCarro(){return idCarro;}
+    public static Context getContext(){return context;}
 }

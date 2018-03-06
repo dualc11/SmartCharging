@@ -21,13 +21,12 @@
         android:layout_height="wrap_content"
         android:text="Finalizar Viagem"
         android:onClick="pararServico"/>
-
     <Button
         android:id="@+id/bRegKmsDiarios"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Registar Kms Diários"
-        android:onClick="guardaKmsDiários"/>
+        android:onClick="guardaKmsDiários"
+        android:text="Registar Kms Diários" />
 
     <Button
         android:id="@+id/bIdentificarCarro"

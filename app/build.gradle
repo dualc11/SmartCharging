@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -34,7 +35,5 @@ dependencies {
     compile 'com.google.android.gms:play-services:10.2.1'
     compile 'com.google.android.gms:play-services-location:9.2.0'
     compile 'com.journeyapps:zxing-android-embedded:3.4.0'
-
-    //Mudei aqui
-    compile 'com.github.karanchuri:PermissionManager:0.1.0'
+    compile 'com.android.volley:volley:1.1.0'
 }

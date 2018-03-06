@@ -6,6 +6,10 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Environment;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -48,6 +52,8 @@ public class DBManager {
             "("+DATA+" STRING,"+DISTANCIADIARIA+" DOUBLE, "+USERID+" STRING "+")";
 
     private static SQLiteDatabase db;
+    private static JSONObject jsonObj;
+    private static JSONArray jsonArray;
 
     public DBManager() {
 
@@ -160,18 +166,28 @@ public class DBManager {
         return idViagemAnterior;
     }
 
-    public static synchronized  double calculaKmViagem(int idViagem)
-    {
+    public static synchronized  double calculaKmViagem(int idViagem) throws JSONException {
         Cursor c;
 
-        c=db.rawQuery("SELECT "+LONGITUDE+","+LATITUDE+" FROM "+TABLE_GPS_LOGGER+" WHERE "+VIAGEMID+"="+idViagem,null);
+        c=db.rawQuery("SELECT "+LONGITUDE+","+LATITUDE+","+ALTITUDE+","+DATAEHORA+
+                " FROM "+TABLE_GPS_LOGGER+" WHERE "+VIAGEMID+"="+idViagem,null);
 
         double longAnterior=0,latAnterior=0,longSeguinte=0,latSeguinte=0;
         double kmTotalViagem=0;
         int i=0;
 
+        jsonObj=new JSONObject();
+        jsonArray=new JSONArray();
+
         while(c.moveToNext())
         {
+            //Dados para mandar para o servidor
+            jsonObj.put("longitude",Double.toString(c.getDouble(0)));
+            jsonObj.put("latitude",Double.toString(c.getDouble(1)));
+            jsonObj.put("altitude",Double.toString(c.getDouble(2)));
+            jsonObj.put("dataEhora",c.getString(3));
+            jsonArray.put(jsonObj);
+
             if(i==0)
             {
                 longAnterior = c.getDouble(0);
@@ -355,4 +371,6 @@ public class DBManager {
             return false;
         }
     }
+
+    public static JSONArray getJsonArray(){return jsonArray;}
 }

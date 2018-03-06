@@ -19,8 +19,6 @@ allprojects {
     repositories {
         google()
         jcenter()
-        //Mudei aqui
-        maven {url "http://jitpack.io"}
     }
 }
 
