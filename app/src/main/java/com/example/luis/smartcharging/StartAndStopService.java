@@ -25,7 +25,8 @@ import org.json.JSONObject;
 public class StartAndStopService extends AppCompatActivity {
 
     private static final int PERMISSOES = 1;
-    private Intent intent;
+    private static Intent intent;
+    private Intent intentSeekBar;
     private static DBManager db;
 
     //qr code scanner object
@@ -44,6 +45,7 @@ public class StartAndStopService extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_and_stop_service);
 
+        intentSeekBar= new Intent(this,seekBar.class);
         intent = new Intent(this, GpsService.class);
 
         sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
@@ -73,6 +75,12 @@ public class StartAndStopService extends AppCompatActivity {
         context=getApplicationContext();
     }
 
+    public void seekBar(View v)
+    {
+        Intent intentPrincipal = new Intent(StartAndStopService.this, seekBar.class);
+        startActivity(intentPrincipal);
+    }
+
     //Terminamos o serviço para este não continuar activo quando a aplicação é fechada
     @Override
     protected void onDestroy()
@@ -85,29 +93,25 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
-    /*public void getVolleyRequest(View v)
-    {
-        VolleyRequest.postRequest();
-    }*/
-
     //Método para iniciar uma rota
     public void iniciarServico(View v)
     {
-        if(reconheceuQrCode)
+        if(!GpsService.getServicoIniciado())
         {
-            if (!GpsService.getServicoIniciado())//Para iniciar só o serviço quando este ainda não foi iniciado.
+            if(reconheceuQrCode)
             {
                 reconheceuQrCode = false;
-                startService(intent);
+                intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
+                startActivity(intentSeekBar);
             }
             else
             {
-                Toast.makeText(this, "Está uma viagem em curso!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"Ainda não identificou o Tuc-Tuc!",Toast.LENGTH_SHORT).show();
             }
         }
         else
         {
-            Toast.makeText(this,"Ainda não identificou o Tuc-Tuc!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Está uma viagem em curso!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -115,21 +119,11 @@ public class StartAndStopService extends AppCompatActivity {
     public void pararServico(View v) throws JSONException {
         if(intent!=null)
         {
-            double kmViagem=0;
-            //Calcula os kms da última viagem
-
             //Para não permitir o serviço ser parado antes de ser iniciado.
             if(GpsService.getServicoIniciado())
             {
-                int idViagem=GpsService.getIdViagem();
-                kmViagem = DBManager.calculaKmViagem(idViagem);
-                stopService(intent);
-
-                //Começamos a nova actividade que irá mostrar os kms, bateria, carregar etc
-                Intent intentPrincipal = new Intent(StartAndStopService.this, ShowLocationActivity.class);
-                intentPrincipal.putExtra("distanciaKm", kmViagem);
-                intentPrincipal.putExtra("idViagem", idViagem);
-                startActivity(intentPrincipal);
+                intentSeekBar.putExtra("opcao",1); //Para indicar que é para terminar a viagem
+                startActivity(intentSeekBar);
             }
             else
             {
@@ -341,4 +335,5 @@ public class StartAndStopService extends AppCompatActivity {
     }
     public static int getIdCarro(){return idCarro;}
     public static Context getContext(){return context;}
+    public static Intent getIntentGps(){return intent;}
 }

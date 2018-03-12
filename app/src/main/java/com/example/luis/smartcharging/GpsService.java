@@ -142,7 +142,8 @@ public class GpsService extends Service implements LocationListener {
         viagemId++;
         guardouAlgumaCoordenada = false;
         //Mudei aqui
-        bateriaInicial = rand.nextInt(11);
+        //bateriaInicial = rand.nextInt(11);
+        bateriaInicial=seekBar.getPercentagemBat();
         db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, StartAndStopService.getIdCarro());//Passar idCarro também
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -158,10 +159,11 @@ public class GpsService extends Service implements LocationListener {
         //Mudei aqui
         if(guardouAlgumaCoordenada) //Caso durante a viagem tenha sido guardada alguma coordenada.
         {
-            bateriaFinal = rand.nextInt(11);
+            /*bateriaFinal = rand.nextInt(11);
             while (bateriaFinal >= bateriaInicial) {
                 bateriaFinal = rand.nextInt(11);
-            }
+            }*/
+            bateriaFinal=seekBar.getPercentagemBat();
             double kmViagem = 0;
 
             try {
@@ -180,13 +182,6 @@ public class GpsService extends Service implements LocationListener {
             String kmsViagem=Double.toString(kmViagem);
 
             VolleyRequest.postRequest(idCarro,idDriver,batInicial,batFinal,kmsViagem,DBManager.getJsonArray());
-            //DEBUG
-            Log.i("idCarro",idCarro);
-            Log.i("idDriver",idDriver);
-            Log.i("batInicial",batInicial);
-            Log.i("batFinal",batFinal);
-            Log.i("kmsViagem",kmsViagem);
-            Log.i("JSON", DBManager.getJsonArray().toString());
         }
         else //Caso a viagem não tenha registado nenhuma coordenada apagamos o registo da outra tabela
         // ViagemInfo pois não faz sentido ter
