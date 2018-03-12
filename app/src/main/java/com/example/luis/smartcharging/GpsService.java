@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -48,6 +49,133 @@ public class GpsService extends Service implements LocationListener {
     private int bateriaInicial, bateriaFinal;
 
     private boolean guardouAlgumaCoordenada;
+
+    //O sistema chama este método antes de chamar onStartCommand ou onBind para operações de configuração
+    //este método é chamado apenas uma vez antes do serviço se iniciar.
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onCreate() {
+
+        super.onCreate();
+        db = StartAndStopService.getDb();
+
+        viagemId = DBManager.getIdViagemAnterior();
+        viagemId++;
+        guardouAlgumaCoordenada = false;
+        //Mudei aqui
+        //bateriaInicial = rand.nextInt(11);
+        bateriaInicial=seekBar.getPercentagemBat();
+        db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, StartAndStopService.getIdCarro());//Passar idCarro também
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, TIME_UPDATES, DISTANCE_UPDATES, this);
+        startTimer();
+    }
+
+    //Este método é usado para destruir o serviço.
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        //Mudei aqui
+        if(guardouAlgumaCoordenada) //Caso durante a viagem tenha sido guardada alguma coordenada.
+        {
+            bateriaFinal=seekBar.getPercentagemBat();
+            double kmViagem = 0;
+
+            try {
+                kmViagem = DBManager.calculaKmViagem(viagemId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            db.updateKmBateriaFinal(kmViagem, bateriaFinal, viagemId);
+
+            //Enviar dados da viagem para o servidor
+            String idCarro=Integer.toString(StartAndStopService.getIdCarro());
+            String idDriver=StartAndStopService.getUserId();
+            String batInicial=Integer.toString(bateriaInicial);
+            String batFinal=Integer.toString(bateriaFinal);
+            String kmsViagem=Double.toString(kmViagem);
+
+            VolleyRequest.postRequest(idCarro,idDriver,batInicial,batFinal,kmsViagem,DBManager.getJsonArray());
+        }
+        else //Caso a viagem não tenha registado nenhuma coordenada apagamos o registo da outra tabela
+        // ViagemInfo pois não faz sentido ter
+        {
+            //Apagar o resgisto actual que não faz sentido estar
+            db.apagaInfoViagem(viagemId);
+        }
+
+        stopSelf();
+        Toast.makeText(this,"Serviço parado", Toast.LENGTH_SHORT).show();
+        servicoIniciado=false;
+        stoptimertask();
+        locationManager.removeUpdates(this);
+    }
+
+    //O serviço chama este método quando outro componente da aplicação inicia o serviço chamando o
+    //método StartAndStopService() iniciando o serviço em segundo plano indefinidamente até ser chamado o
+    //método stopService() (chamado por outro componente) ou stopSelf() (interrompido pelo próprio serviço)..
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        servicoIniciado = true;
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    //O sistema chama este método quando outro componete pretende vincular-se ao serviºo através do
+    //método bindService().
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    //Implementação da interface LocationService
+
+    /**
+     * Monitor for location changes
+     * @param location holds the new location
+     */
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        data= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+        longitude=location.getLongitude();
+        latitude=location.getLatitude();
+        altitude=location.getAltitude();
+    }
+
+    /**
+     * GPS turned off, stop watching for updates.
+     * @param provider contains data on which provider was disabled
+     */
+    @Override
+    public void onProviderDisabled(String provider)
+    {
+        Toast.makeText(this, "Desligou GPS, ligue por favor", Toast.LENGTH_LONG).show();
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        v.vibrate(1000);
+    }
+
+    /**
+     * GPS turned back on, re-enable monitoring
+     * @param provider contains data on which provider was enabled
+     */
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onProviderEnabled(String provider)
+    {
+        Toast.makeText(this, "Ligou GPS, viagem iniciada!", Toast.LENGTH_LONG).show();
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, TIME_UPDATES, DISTANCE_UPDATES, this);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // TODO Auto-generated method stub
+    }
 
     public void startTimer() {
         //Cria o timer
@@ -109,134 +237,6 @@ public class GpsService extends Service implements LocationListener {
     //Passar de graus para radianos
     public static double degToRad(double deg) {
         return deg * (Math.PI / 180);
-    }
-
-    //O serviço chama este método quando outro componente da aplicação inicia o serviço chamando o
-    //método StartAndStopService() iniciando o serviço em segundo plano indefinidamente até ser chamado o
-    //método stopService() (chamado por outro componente) ou stopSelf() (interrompido pelo próprio serviço)..
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "Serviço iniciado.", Toast.LENGTH_LONG).show();
-        servicoIniciado = true;
-        return super.onStartCommand(intent, flags, startId);
-    }
-
-    //O sistema chama este método quando outro componete pretende vincular-se ao serviºo através do
-    //método bindService().
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    //O sistema chama este método antes de chamar onStartCommand ou onBind para operações de configuração
-    //este método é chamado apenas uma vez antes do serviço se iniciar.
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onCreate() {
-
-        super.onCreate();
-        db = StartAndStopService.getDb();
-
-        viagemId = DBManager.getIdViagemAnterior();
-        viagemId++;
-        guardouAlgumaCoordenada = false;
-        //Mudei aqui
-        //bateriaInicial = rand.nextInt(11);
-        bateriaInicial=seekBar.getPercentagemBat();
-        db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, StartAndStopService.getIdCarro());//Passar idCarro também
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, TIME_UPDATES, DISTANCE_UPDATES, this);
-        startTimer();
-    }
-
-    //Este método é usado para destruir o serviço.
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        //Mudei aqui
-        if(guardouAlgumaCoordenada) //Caso durante a viagem tenha sido guardada alguma coordenada.
-        {
-            /*bateriaFinal = rand.nextInt(11);
-            while (bateriaFinal >= bateriaInicial) {
-                bateriaFinal = rand.nextInt(11);
-            }*/
-            bateriaFinal=seekBar.getPercentagemBat();
-            double kmViagem = 0;
-
-            try {
-                kmViagem = DBManager.calculaKmViagem(viagemId);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            db.updateKmBateriaFinal(kmViagem, bateriaFinal, viagemId);
-
-            //Enviar dados da viagem para o servidor
-            String idCarro=Integer.toString(StartAndStopService.getIdCarro());
-            String idDriver=StartAndStopService.getUserId();
-            String batInicial=Integer.toString(bateriaInicial);
-            String batFinal=Integer.toString(bateriaFinal);
-            String kmsViagem=Double.toString(kmViagem);
-
-            VolleyRequest.postRequest(idCarro,idDriver,batInicial,batFinal,kmsViagem,DBManager.getJsonArray());
-        }
-        else //Caso a viagem não tenha registado nenhuma coordenada apagamos o registo da outra tabela
-        // ViagemInfo pois não faz sentido ter
-        {
-            //Apagar o resgisto actual que não faz sentido estar
-            db.apagaInfoViagem(viagemId);
-        }
-
-        stopSelf();
-        Toast.makeText(this,"Serviço parado", Toast.LENGTH_LONG).show();
-        servicoIniciado=false;
-        stoptimertask();
-        locationManager.removeUpdates(this);
-    }
-
-    //Implementação da interface LocationService
-
-    /**
-     * Monitor for location changes
-     * @param location holds the new location
-     */
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        data= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
-        longitude=location.getLongitude();
-        latitude=location.getLatitude();
-        altitude=location.getAltitude();
-    }
-
-    /**
-     * GPS turned off, stop watching for updates.
-     * @param provider contains data on which provider was disabled
-     */
-    @Override
-    public void onProviderDisabled(String provider)
-    {
-        Toast.makeText(this, "Desligou GPS, ligue por favor", Toast.LENGTH_LONG).show();
-    }
-
-    /**
-     * GPS turned back on, re-enable monitoring
-     * @param provider contains data on which provider was enabled
-     */
-    @SuppressLint("MissingPermission")
-    @Override
-    public void onProviderEnabled(String provider)
-    {
-        Toast.makeText(this, "Ligou GPS", Toast.LENGTH_LONG).show();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, TIME_UPDATES, DISTANCE_UPDATES, this);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // TODO Auto-generated method stub
     }
 
     public static int getIdViagem()

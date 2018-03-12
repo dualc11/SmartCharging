@@ -35,19 +35,19 @@ public class seekBar extends AppCompatActivity {
                 new SeekBar.OnSeekBarChangeListener() {
                     int progress;
                     @Override
-                    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                    percentagemBat=i;
-                    percentagem.setText("Percentagem: "+percentagemBat);
+                    public void onProgressChanged(SeekBar seekBar, int i, boolean b)
+                    {
+                        percentagemBat=i;
+                        percentagem.setText("Percentagem: "+percentagemBat);
                     }
 
                     @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-
-                    }
+                    public void onStartTrackingTouch(SeekBar seekBar) {}
 
                     @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                    percentagem.setText("Percentagem: "+percentagemBat);
+                    public void onStopTrackingTouch(SeekBar seekBar)
+                    {
+                        percentagem.setText("Percentagem: "+percentagemBat);
                     }
                 }
         );
