@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:max="10"
-        android:theme="@style/Widget.AppCompat.SeekBar.Discrete" />
+        android:theme="@style/Widget.AppCompat.SeekBar.Discrete"/>
 
     <TextView
         android:id="@+id/percentagem"

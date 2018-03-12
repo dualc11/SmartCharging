@@ -16,6 +16,7 @@ public class seekBar extends AppCompatActivity {
     private TextView percentagem;
     private static int percentagemBat;
     private static Intent intentPrincipal;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,6 +25,7 @@ public class seekBar extends AppCompatActivity {
         intentPrincipal=new Intent(seekBar.this,StartAndStopService.class);
     }
 
+    /*Método para controlar a percentagem de bateria que o user põe na seekBar*/
     public void seekBarTouch()
     {
         seekBar=findViewById(R.id.seek_bar);
@@ -51,6 +53,7 @@ public class seekBar extends AppCompatActivity {
         );
     }
 
+    /*Método para iniciar o serviço de começar a registar as coordenadas da viagem*/
     public void iniciarViagem()
     {
         if(percentagemBat!=0)
@@ -70,6 +73,7 @@ public class seekBar extends AppCompatActivity {
         }
     }
 
+    /*Método para parar finalizar a viagem*/
     public void terminarViagem() throws JSONException {
         if(percentagemBat!=0)
         {
@@ -109,5 +113,6 @@ public class seekBar extends AppCompatActivity {
             terminarViagem();
         }
     }
+
     public static int getPercentagemBat(){return percentagemBat;}
 }

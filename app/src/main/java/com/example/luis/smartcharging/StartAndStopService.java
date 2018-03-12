@@ -22,6 +22,9 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 public class StartAndStopService extends AppCompatActivity {
 
     private static final int PERMISSOES = 1;
@@ -91,6 +94,13 @@ public class StartAndStopService extends AppCompatActivity {
         {
             stopService(intent);
         }
+    }
+
+    /*Este método é chamado quando o botão back é carregado*/
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true); //Para minimizar a aplicação
+        //super.onBackPressed();
     }
 
     //Método para iniciar uma rota
@@ -239,8 +249,6 @@ public class StartAndStopService extends AppCompatActivity {
                                     .setCancelable(false)
                                     .setPositiveButton("Ok", new DialogInterface.OnClickListener()
                                     {
-                                        public static final int REQUEST_PERMISSION_SETTING = 1;
-
                                         @Override
                                         public void onClick(DialogInterface dialog, int which)
                                         {
@@ -248,28 +256,7 @@ public class StartAndStopService extends AppCompatActivity {
                                             {
                                                 if(!shouldShowRequestPermissionRationale(permissions[finalIndex]))
                                                 {
-                                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                                                    intent.setData(uri);
-                                                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
-                                                    //Delay para o utilizador não ver o segundo alerta antes de ir às definições
-                                                    try {
-                                                        Thread.sleep(5000);
-                                                    } catch (InterruptedException e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                    //Para saber quando é que utilizador voltou das definições
-                                                    new AlertDialog.Builder(StartAndStopService.this)
-                                                            .setTitle("Confirmação")
-                                                            .setMessage("Confirme que adicionou todas as permissões!")
-                                                            .setCancelable(false)
-                                                            .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialogInterface, int i)
-                                                                {
-                                                                    pedePermissoes();
-                                                                }
-                                                            }).show();
+                                                    alertaDefinicoes();
                                                 }
                                                 else
                                                 {
@@ -326,6 +313,32 @@ public class StartAndStopService extends AppCompatActivity {
         {
             return false;
         }
+    }
+
+    public void alertaDefinicoes()
+    {
+        int REQUEST_PERMISSION_SETTING = 1;
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
+        //Delay para o utilizador não ver o segundo alerta antes de ir às definições
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Confirmação")
+                .setMessage("Confirme que adicionou todas as permissões")
+                .setCancelable(false)
+                .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                       pedePermissoes();
+                    }
+                }).show();
     }
     //Métodos getters
     public static String getUserId() {return userId;}
