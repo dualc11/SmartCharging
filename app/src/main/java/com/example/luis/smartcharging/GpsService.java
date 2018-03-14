@@ -1,11 +1,9 @@
 package com.example.luis.smartcharging;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -14,12 +12,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
@@ -64,7 +58,7 @@ public class GpsService extends Service implements LocationListener {
         guardouAlgumaCoordenada = false;
         //Mudei aqui
         //bateriaInicial = rand.nextInt(11);
-        bateriaInicial=seekBar.getPercentagemBat();
+        bateriaInicial= IntroduzirPerBat.getPercentagemBat();
         db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, StartAndStopService.getIdCarro());//Passar idCarro também
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -80,7 +74,7 @@ public class GpsService extends Service implements LocationListener {
         //Mudei aqui
         if(guardouAlgumaCoordenada) //Caso durante a viagem tenha sido guardada alguma coordenada.
         {
-            bateriaFinal=seekBar.getPercentagemBat();
+            bateriaFinal= IntroduzirPerBat.getPercentagemBat();
             double kmViagem = 0;
 
             try {

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.luis.smartcharging.seekBar">
+    tools:context="com.example.luis.smartcharging.IntroduzirPerBat">
 
     <TextView
         android:id="@+id/info"

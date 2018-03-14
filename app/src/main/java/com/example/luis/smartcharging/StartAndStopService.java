@@ -22,9 +22,6 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class StartAndStopService extends AppCompatActivity {
 
     private static final int PERMISSOES = 1;
@@ -48,7 +45,7 @@ public class StartAndStopService extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_and_stop_service);
 
-        intentSeekBar= new Intent(this,seekBar.class);
+        intentSeekBar= new Intent(this,IntroduzirPerBat.class);
         intent = new Intent(this, GpsService.class);
 
         sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
@@ -80,7 +77,7 @@ public class StartAndStopService extends AppCompatActivity {
 
     public void seekBar(View v)
     {
-        Intent intentPrincipal = new Intent(StartAndStopService.this, seekBar.class);
+        Intent intentPrincipal = new Intent(StartAndStopService.this, IntroduzirPerBat.class);
         startActivity(intentPrincipal);
     }
 
@@ -339,6 +336,20 @@ public class StartAndStopService extends AppCompatActivity {
                        pedePermissoes();
                     }
                 }).show();
+    }
+    //Alterei aqui
+    public void iniciarCarregamento(View v)
+    {
+        Intent intentCarregar=new Intent(StartAndStopService.this,Carregamento.class);
+        intentCarregar.putExtra("opcaoCarregamento",1); //Para indicar que é para inicar carregamento
+        startActivity(intentCarregar);
+    }
+
+    public void terminarCarregar(View v)
+    {
+        Intent intentCarregar=new Intent(StartAndStopService.this,Carregamento.class);
+        intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
+        startActivity(intentCarregar);
     }
     //Métodos getters
     public static String getUserId() {return userId;}

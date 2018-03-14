@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/maxresdefault"
     tools:context="com.example.luis.smartcharging.StartAndStopService">
 
     <Button
@@ -21,12 +20,6 @@
         android:layout_height="wrap_content"
         android:text="Finalizar Viagem"
         android:onClick="pararServico"/>
-    <Button
-        android:id="@+id/bRegKmsDiarios"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="guardaKmsDiários"
-        android:text="Registar Kms Diários" />
 
     <Button
         android:id="@+id/bIdentificarCarro"
@@ -34,5 +27,26 @@
         android:layout_height="wrap_content"
         android:text="Identificar Tuc-Tuc"
         android:onClick="qrCode"/>
+
+    <Button
+        android:id="@+id/bCarregar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Carregar Tuc-Tuc"
+        android:onClick="iniciarCarregamento"/>
+
+    <Button
+        android:id="@+id/bAcabarCarregar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Terminar carregamento"
+        android:onClick="terminarCarregar"/>
+
+    <Button
+        android:id="@+id/bRegKmsDiarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Registar Kms Diários"
+        android:onClick="guardaKmsDiários"/>
 
 </LinearLayout>
