@@ -51,6 +51,20 @@ public class DBManager {
     private static final String CREATE_TABLE_REGISTO="CREATE TABLE "+TABLE_REGISTO_DIARIO+
             "("+DATA+" STRING,"+DISTANCIADIARIA+" DOUBLE, "+USERID+" STRING "+")";
 
+    //Tabela para os carregamentos dos tuc-tucs
+
+    private static final String TABLE_CARREGAMENTOS="TucsCarregar";
+    private static final String IDCARREGAMENTO="id";
+    private static final String HORAINICIO="horaInicio";
+    private static final String HORAFIM="horaFinal";
+    private static final String TUCID="tucId";
+    private static final String TOMADAID="tomadaId";
+
+    private static final String CRATE_TABLE_CARREGAMENTO="CREATE TABLE "+TABLE_CARREGAMENTOS+
+            "("+IDCARREGAMENTO+" INTEGER PRIMARY KEY AUTOINCREMENT, "+HORAINICIO+" STRING, "
+            +HORAFIM+" STRING, "+TUCID+" INTEGER, "+TOMADAID+" INTEGER, "+USERID+" STRING, "+
+            BATERIAINICIAL+" INTEGER, "+BATERIAFINAL+" INTEGER"+")";
+
     private static SQLiteDatabase db;
     private static JSONObject jsonObj;
     private static JSONArray jsonArray;
@@ -115,6 +129,7 @@ public class DBManager {
         db.execSQL(CREATE_TABLE_GPS_LOGGER);
         db.execSQL(CREATE_TABLE_VIAGEM_INFO);
         db.execSQL(CREATE_TABLE_REGISTO);
+        db.execSQL(CRATE_TABLE_CARREGAMENTO);
     }
 
     public synchronized boolean insertData(double longitude, double latitude,double altitude, String dataEhora,int viagemId)
@@ -370,6 +385,77 @@ public class DBManager {
         {
             return false;
         }
+    }
+
+    public synchronized boolean colocaTucCarregar(int bateriaInicio,int tucId,int tomadaId,String userId)
+    {
+        String horaInicio=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+        SQLiteStatement stm = null;
+        boolean res=false;
+        db.beginTransaction();
+
+        try{
+
+            String sql="";
+
+            sql="INSERT INTO "+TABLE_CARREGAMENTOS+"("+HORAINICIO+","+BATERIAINICIAL+","+TUCID+","+TOMADAID+","+USERID+")"+
+                    " VALUES('"+horaInicio+"',"+bateriaInicio+","+tucId+","+tomadaId+", '"+userId+"')";
+
+            stm = db.compileStatement(sql);
+
+            if (stm.executeInsert() <= 0)
+            {
+                Log.i(MODULE, "Failed insertion of appliance into database");
+            }
+            res = true;
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            res=false;
+            e.printStackTrace();
+        } finally	{
+            stm.close();
+            db.endTransaction();
+            Log.d(MODULE, "new appliance data inserted");
+
+        }
+        return true;
+    }
+
+    public synchronized boolean atualizaInfoCarregamento(int bateriaFim, int tucId,int tomadaId)
+    {
+        String horaFim=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+
+        SQLiteStatement stm = null;
+        boolean res=false;
+        db.beginTransaction();
+
+        try{
+
+            String sql="";
+
+            sql="UPDATE "+TABLE_CARREGAMENTOS+" SET "+HORAFIM+"='"+horaFim+"',"+BATERIAFINAL+"="+bateriaFim+
+                    " WHERE "+TUCID+"="+tucId+
+                    " AND "+TOMADAID+"="+tomadaId+" AND "+HORAFIM+" IS NULL";
+            stm = db.compileStatement(sql);
+
+            if (stm.executeInsert() <= 0)
+            {
+                Log.i(MODULE, "Failed insertion of appliance into database");
+            }
+            res = true;
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            res=false;
+            e.printStackTrace();
+        } finally	{
+            stm.close();
+            db.endTransaction();
+            Log.d(MODULE, "new appliance data inserted");
+
+        }
+        return true;
     }
 
     public static JSONArray getJsonArray(){return jsonArray;}
