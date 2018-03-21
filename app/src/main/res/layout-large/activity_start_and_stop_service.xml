@@ -41,6 +41,12 @@
         android:layout_height="wrap_content"
         android:text="Terminar carregamento"
         android:onClick="terminarCarregar"/>
+    <Button
+        android:id="@+id/bTucsDisponiveis"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ver tucs disponíveis"
+        android:onClick="verTucsDisp"/>
 
     <Button
         android:id="@+id/bRegKmsDiarios"

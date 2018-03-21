@@ -351,6 +351,12 @@ public class StartAndStopService extends AppCompatActivity {
         intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
         startActivity(intentCarregar);
     }
+
+    public void verTucsDisp(View v)
+    {
+        Intent intentVerTucsDisp=new Intent(StartAndStopService.this,VerTucsDisponiveis.class);
+        startActivity(intentVerTucsDisp);
+    }
     //Métodos getters
     public static String getUserId() {return userId;}
     public static DBManager getDb()

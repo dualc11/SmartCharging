@@ -33,8 +33,8 @@
         </activity>
         <activity android:name=".ShowLocationActivity" />
         <activity android:name=".IntroduzirPerBat" />
-        <activity android:name=".Chat" />
-        <activity android:name=".Carregamento"></activity>
+        <activity android:name=".Carregamento" />
+        <activity android:name=".VerTucsDisponiveis"></activity>
     </application>
 
 </manifest>
