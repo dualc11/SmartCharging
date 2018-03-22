@@ -109,6 +109,7 @@ public class StartAndStopService extends AppCompatActivity {
             {
                 reconheceuQrCode = false;
                 intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
+                intentSeekBar.putExtra("idCarro",idCarro);
                 startActivity(intentSeekBar);
             }
             else
@@ -130,6 +131,7 @@ public class StartAndStopService extends AppCompatActivity {
             if(GpsService.getServicoIniciado())
             {
                 intentSeekBar.putExtra("opcao",1); //Para indicar que é para terminar a viagem
+                intentSeekBar.putExtra("idCarro",idCarro);
                 startActivity(intentSeekBar);
             }
             else
@@ -357,6 +359,7 @@ public class StartAndStopService extends AppCompatActivity {
         Intent intentVerTucsDisp=new Intent(StartAndStopService.this,VerTucsDisponiveis.class);
         startActivity(intentVerTucsDisp);
     }
+
     //Métodos getters
     public static String getUserId() {return userId;}
     public static DBManager getDb()

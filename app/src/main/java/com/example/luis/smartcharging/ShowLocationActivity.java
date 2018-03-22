@@ -1,7 +1,9 @@
 package com.example.luis.smartcharging;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -25,7 +27,7 @@ public class ShowLocationActivity extends AppCompatActivity {
         idViagemText=findViewById(R.id.idViagem);
         autonomiaText=findViewById(R.id.autonomiaText);
         percentagemBatText=findViewById(R.id.percentagemBat);
-        bCarregarBat=findViewById(R.id.bIniciarCarregamento);
+       // bCarregarBat=findViewById(R.id.bIniciarCarregamento);
 
         autonomiaText.setText("Autonomia restante: X%");
         percentagemBatText.setText("Percentagem de bateria atual: X%");
@@ -36,5 +38,12 @@ public class ShowLocationActivity extends AppCompatActivity {
 
         distanciaKm = getIntent().getDoubleExtra("distanciaKm", 0);
         distanciaKmText.setText("Distância percorrida na última viagem: " + distanciaKm + " Km");
+    }
+
+    public void voltaPrincipal(View v)
+    {
+        Intent intentPrincipal = new Intent(ShowLocationActivity.this,StartAndStopService.class);
+        startActivity(intentPrincipal);
+        this.finish();
     }
 }

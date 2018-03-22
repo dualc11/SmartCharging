@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -439,11 +440,13 @@ public class DBManager {
                     " AND "+TOMADAID+"="+tomadaId+" AND "+HORAFIM+" IS NULL";
             stm = db.compileStatement(sql);
 
-            if (stm.executeInsert() <= 0)
+            if (stm.executeUpdateDelete() <= 0)
             {
-                Log.i(MODULE, "Failed insertion of appliance into database");
+                res=false;
             }
-            res = true;
+            else
+            {
+            res = true;}
 
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -452,10 +455,11 @@ public class DBManager {
         } finally	{
             stm.close();
             db.endTransaction();
-            Log.d(MODULE, "new appliance data inserted");
+            //Log.d(MODULE, "new appliance data inserted");
 
         }
-        return true;
+        if(res){return true;}else{return false;}
+        //return true;
     }
 
     public static JSONArray getJsonArray(){return jsonArray;}
