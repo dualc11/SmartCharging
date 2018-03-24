@@ -21,12 +21,6 @@
         android:text="Finalizar Viagem"
         android:onClick="pararServico"/>
 
-    <Button
-        android:id="@+id/bIdentificarCarro"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Identificar Tuc-Tuc"
-        android:onClick="qrCode"/>
 
     <Button
         android:id="@+id/bCarregar"

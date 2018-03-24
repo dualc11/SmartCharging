@@ -28,20 +28,15 @@ public class GpsService extends Service implements LocationListener {
     private LocationManager locationManager;
     private final static int DISTANCE_UPDATES = 1;
     private final static int TIME_UPDATES = 5;
-
     private static DBManager db;
     private static boolean servicoIniciado = false;
     private static int viagemId = 0;
-
     private Timer timer;    //Timer
     private TimerTask timerTask;    //Ação que irá ser desempenhada de x em x tempo.
     private String data;
     private double longitude, latitude, altitude, longitudeAnterior;
     private final Handler handler = new Handler();
-
-    private Random rand = new Random();
     private int bateriaInicial, bateriaFinal;
-
     private boolean guardouAlgumaCoordenada;
 
     //O sistema chama este método antes de chamar onStartCommand ou onBind para operações de configuração
@@ -214,7 +209,7 @@ public class GpsService extends Service implements LocationListener {
         };
     }
 
-    /*Passar de coordenadas para graus*/
+    /*Passar de coordenadas para kms*/
 
     public static double getDistanceFromLatLonInKm(double lat1, double lon1, double lat2, double lon2) {
         int R = 6371; // Raio da Terra em km

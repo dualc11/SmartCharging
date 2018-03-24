@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -28,22 +29,23 @@ public class StartAndStopService extends AppCompatActivity {
     private static Intent intent;
     private Intent intentSeekBar;
     private static DBManager db;
-
-    //qr code scanner object
     private IntentIntegrator qrScan;
     private static int idCarro;
-    private boolean reconheceuQrCode;
-
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
     private static String userId;
     private static Context context;
+    private static Button bTerminarViagem,bIniciarViagem;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_and_stop_service);
+
+        bIniciarViagem=findViewById(R.id.bIniciarViagem);
+        bTerminarViagem=findViewById(R.id.bPararViagem);
+        buttonsVisibility();
 
         intentSeekBar= new Intent(this,IntroduzirPerBat.class);
         intent = new Intent(this, GpsService.class);
@@ -66,13 +68,26 @@ public class StartAndStopService extends AppCompatActivity {
 
         //intializing scan object
         qrScan = new IntentIntegrator(this);
-        reconheceuQrCode = false;
 
         if(!userIdRegistado()) {
             registoUserId();
         }
 
         context=getApplicationContext();
+    }
+
+    public void buttonsVisibility()
+    {
+        if(GpsService.getServicoIniciado())
+        {
+            bIniciarViagem.setVisibility(View.GONE);
+            bTerminarViagem.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            bIniciarViagem.setVisibility(View.VISIBLE);
+            bTerminarViagem.setVisibility(View.GONE);
+        }
     }
 
     public void seekBar(View v)
@@ -105,17 +120,7 @@ public class StartAndStopService extends AppCompatActivity {
     {
         if(!GpsService.getServicoIniciado())
         {
-            if(reconheceuQrCode)
-            {
-                reconheceuQrCode = false;
-                intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
-                intentSeekBar.putExtra("idCarro",idCarro);
-                startActivity(intentSeekBar);
-            }
-            else
-            {
-                Toast.makeText(this,"Ainda não identificou o Tuc-Tuc!",Toast.LENGTH_SHORT).show();
-            }
+            qrCode();
         }
         else
         {
@@ -179,7 +184,11 @@ public class StartAndStopService extends AppCompatActivity {
                     JSONObject obj = new JSONObject(result.getContents());
                     //Guarda o valor que é lido do QrCode
                     idCarro=Integer.parseInt(obj.getString("IdCarro"));
-                    reconheceuQrCode=true;
+
+                    //Vai para o intent de colocar a percentagem de bateria
+                    intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
+                    intentSeekBar.putExtra("idCarro",idCarro);
+                    startActivity(intentSeekBar);
                 }
                 catch (JSONException e)
                 {
@@ -195,17 +204,10 @@ public class StartAndStopService extends AppCompatActivity {
     }
 
     //Para inicializar o objeto que vai ser usado para ler o qrCode
-    public void qrCode(View v)
+    public void qrCode()
     {
-        if(!GpsService.getServicoIniciado())
-        {
             //initiating the qr code scan
             qrScan.initiateScan();
-        }
-        else
-        {
-            Toast.makeText(this,"Está uma viagem a decorrer!",Toast.LENGTH_LONG).show();
-        }
     }
 
     //Métodos para a verificação das permissões, mostra um alert para cada permissão que ainda não foi cedida
