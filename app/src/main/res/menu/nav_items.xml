@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <!--
+                Add menu items here
+                Menu items with icon and Title
+        -->
+        <item
+            android:id="@+id/myTukxis"
+            android:title="My Tukxi"
+            android:orderInCategory="1"/>
+        <item
+            android:id="@+id/myTrip"
+            android:title="My Trip"
+            android:orderInCategory="2"/>
+        <item
+            android:id="@+id/carregar"
+            android:title="Carregar Tuc-Tuc"
+            android:orderInCategory="3"/>
+        <item
+            android:id="@+id/acabarCarregar"
+            android:title="Terminar Carregamento"
+            android:orderInCategory="4"/>
+        <item
+            android:id="@+id/tucsDisponiveis"
+            android:title="Ver Tucs Disponíveis"
+            android:orderInCategory="5"/>
+        <item
+            android:id="@+id/registoDiario"
+            android:title="Registar Kms diários"
+            android:orderInCategory="6" />
+    </group>
+</menu>

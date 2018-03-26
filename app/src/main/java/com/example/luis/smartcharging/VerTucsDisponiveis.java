@@ -1,23 +1,32 @@
 package com.example.luis.smartcharging;
 
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.lang.reflect.Array;
 import java.util.Random;
 
-public class VerTucsDisponiveis extends AppCompatActivity {
+public class VerTucsDisponiveis extends StartAndStopService {
     private static ListView listaTucsDisp;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ver_tucs_disponiveis);
+        toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
+        setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
+        toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
+        getSupportActionBar().setTitle("Fleet");
 
+        navigationClick(toolbar);
         listaTucsDisp=findViewById(R.id.listaTucsDisp);
         geraTucsDisp();
+
     }
 
     public void geraTucsDisp()
@@ -43,7 +52,7 @@ public class VerTucsDisponiveis extends AppCompatActivity {
             }
             if(!jaExiste)
             {
-                tucsDisp[i] = "Tuc Id: " + idTucDisp;
+                tucsDisp[i] = "Car nº " + idTucDisp+"\n"+"(Available/Available(Charging)/Not available)";
                 i++;
             }
         }

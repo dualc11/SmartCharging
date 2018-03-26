@@ -7,13 +7,20 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,6 +43,8 @@ public class StartAndStopService extends AppCompatActivity {
     private static String userId;
     private static Context context;
     private static Button bTerminarViagem,bIniciarViagem;
+    private DrawerLayout dLayout;
+    private Toolbar toolbar;
 
 
     @Override
@@ -43,15 +52,23 @@ public class StartAndStopService extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_and_stop_service);
 
-        bIniciarViagem=findViewById(R.id.bIniciarViagem);
+        sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
+        editor = sharedPref.edit();
+        userId=sharedPref.getString("UserIdentificador",null);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
+        setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
+        toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
+
+        navigationClick(toolbar);
+        getSupportActionBar().setTitle("My Tukxi");
+
+        /*bIniciarViagem=findViewById(R.id.bIniciarViagem);
         bTerminarViagem=findViewById(R.id.bPararViagem);
-        buttonsVisibility();
+        buttonsVisibility();*/
 
         intentSeekBar= new Intent(this,IntroduzirPerBat.class);
         intent = new Intent(this, GpsService.class);
-
-        sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
-        editor = sharedPref.edit();
 
         //Verifica as permissões - não avança até que todas as permissões forem cedidas
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -74,6 +91,77 @@ public class StartAndStopService extends AppCompatActivity {
         }
 
         context=getApplicationContext();
+    }
+
+    //Método para saber quando o utilizador carregou na toolbar
+    public void navigationClick(Toolbar toolbar)
+    {
+        // implement setNavigationOnClickListener event
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dLayout.openDrawer(Gravity.LEFT);
+            }
+        });
+        setNavigationDrawer(); // call method
+    }
+
+    //Método para ver qual dos menus foi carregado
+    public void setNavigationDrawer() {
+        dLayout = (DrawerLayout) findViewById(R.id.drawer_layout); // initiate a DrawerLayout
+        NavigationView navView = (NavigationView) findViewById(R.id.navigation); // initiate a Navigation View
+        Menu menu = navView.getMenu();
+        menu.add(getUserId());
+        menu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.accounticon));
+        // implement setNavigationItemSelectedListener event on NavigationView
+        navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                //Fragment frag = null; // create a Fragment Object
+                int itemId = menuItem.getItemId(); // get selected menu item's id
+                // check selected menu item's id and replace a Fragment Accordingly
+                if (itemId == R.id.myTukxis)
+                {
+                    Intent intent =new Intent(getApplicationContext(),StartAndStopService.class);
+                    startActivity(intent);
+                    dLayout.closeDrawers();
+                    return true;
+                }
+                else if (itemId == R.id.myTrip) {
+                    dLayout.closeDrawers();
+                    if(GpsService.getServicoIniciado()) {
+                        Intent intent = new Intent(getApplicationContext(), MyTrip.class);
+                        startActivity(intent);
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(),"Não está nenhuma viagem em curso",Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
+                else if (itemId == R.id.carregar) {
+                    dLayout.closeDrawers();
+                    iniciarCarregamento();
+                    return true;
+                }
+                else if (itemId == R.id.acabarCarregar) {
+                    dLayout.closeDrawers();
+                    terminarCarregar();
+                    return true;
+                }
+                else if (itemId == R.id.tucsDisponiveis) {
+                    dLayout.closeDrawers();
+                    verTucsDisp();
+                    return true;
+                }
+                else if (itemId == R.id.registoDiario) {
+                    dLayout.closeDrawers();
+                    guardaKmsDiários();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public void buttonsVisibility()
@@ -116,7 +204,7 @@ public class StartAndStopService extends AppCompatActivity {
     }
 
     //Método para iniciar uma rota
-    public void iniciarServico(View v)
+   public void iniciarServico(View v)
     {
         if(!GpsService.getServicoIniciado())
         {
@@ -147,7 +235,7 @@ public class StartAndStopService extends AppCompatActivity {
     }
 
     //Este método é usado para guardar o total de kms diários que um determinado condutor fez
-    public void guardaKmsDiários(View v)
+    public void guardaKmsDiários()
     {
         if(!GpsService.getServicoIniciado()) {
             if (db.calculaKmTotaisDiariosCond()) {
@@ -163,7 +251,7 @@ public class StartAndStopService extends AppCompatActivity {
     }
 
     //Este método é chamado automaticamente quando o objeto qrCode é inicializado no método qrCode().
-    @Override
+   @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
@@ -184,11 +272,7 @@ public class StartAndStopService extends AppCompatActivity {
                     JSONObject obj = new JSONObject(result.getContents());
                     //Guarda o valor que é lido do QrCode
                     idCarro=Integer.parseInt(obj.getString("IdCarro"));
-
-                    //Vai para o intent de colocar a percentagem de bateria
-                    intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
-                    intentSeekBar.putExtra("idCarro",idCarro);
-                    startActivity(intentSeekBar);
+                    confirmacaoIdTuc();
                 }
                 catch (JSONException e)
                 {
@@ -272,6 +356,39 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
+    public void confirmacaoIdTuc()
+    {
+        runOnUiThread(()->
+                {
+                    if (!isFinishing())
+                    {
+                        new AlertDialog.Builder(StartAndStopService.this)
+                                .setTitle("You picked up car "+idCarro)
+                                .setMessage("Please, check and confirm")
+                                .setCancelable(false)
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which)
+                                    {
+                                        //Vai para o intent de colocar a percentagem de bateria
+                                        intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
+                                        intentSeekBar.putExtra("idCarro",idCarro);
+                                        startActivity(intentSeekBar);
+                                    }
+                                })
+                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        qrCode();
+                                    }
+                                })
+                                .show();
+                    }
+                }
+        );
+    }
+
     //Para poder identificar os utilizador por exemplo no registo de kms que fez num dia
     public void registoUserId()
     {
@@ -342,21 +459,21 @@ public class StartAndStopService extends AppCompatActivity {
                 }).show();
     }
     //Alterei aqui
-    public void iniciarCarregamento(View v)
+    public void iniciarCarregamento()
     {
         Intent intentCarregar=new Intent(StartAndStopService.this,Carregamento.class);
         intentCarregar.putExtra("opcaoCarregamento",1); //Para indicar que é para inicar carregamento
         startActivity(intentCarregar);
     }
 
-    public void terminarCarregar(View v)
+    public void terminarCarregar()
     {
         Intent intentCarregar=new Intent(StartAndStopService.this,Carregamento.class);
         intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
         startActivity(intentCarregar);
     }
 
-    public void verTucsDisp(View v)
+    public void verTucsDisp()
     {
         Intent intentVerTucsDisp=new Intent(StartAndStopService.this,VerTucsDisponiveis.class);
         startActivity(intentVerTucsDisp);

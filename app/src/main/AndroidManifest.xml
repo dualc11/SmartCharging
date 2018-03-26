@@ -31,10 +31,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ShowLocationActivity" />
         <activity android:name=".IntroduzirPerBat" />
         <activity android:name=".Carregamento" />
-        <activity android:name=".VerTucsDisponiveis"></activity>
+        <activity android:name=".VerTucsDisponiveis" />
+        <activity android:name=".MyTrip"></activity>
     </application>
 
 </manifest>

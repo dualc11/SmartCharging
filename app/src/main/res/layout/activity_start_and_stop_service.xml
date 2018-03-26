@@ -1,51 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.example.luis.smartcharging.StartAndStopService">
+    android:fitsSystemWindows="true"
+    tools:context=".StartAndStopService">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="2">
+        <!-- include your toolbar layout-->
+        <include layout="@layout/toolbar" />
 
     <Button
-        android:id="@+id/bIniciarViagem"
+        android:id="@+id/bPickUpTukxi"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:onClick="iniciarServico"
-        android:text="Iniciar Viagem" />
+        android:text="Pick up a car" />
 
     <Button
-        android:id="@+id/bPararViagem"
+        android:id="@+id/bPickOffTukxi"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Finalizar Viagem"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Pick off a car"
         android:onClick="pararServico"/>
 
-    <Button
-        android:id="@+id/bCarregar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Carregar Tuc-Tuc"
-        android:onClick="iniciarCarregamento"/>
-
-    <Button
-        android:id="@+id/bAcabarCarregar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Terminar carregamento"
-        android:onClick="terminarCarregar"/>
-    <Button
-        android:id="@+id/bTucsDisponiveis"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Ver tucs disponíveis"
-        android:onClick="verTucsDisp"/>
-
-    <Button
-        android:id="@+id/bRegKmsDiarios"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Registar Kms Diários"
-        android:onClick="guardaKmsDiários"/>
 
 </LinearLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/nav_items" />
+</android.support.v4.widget.DrawerLayout>
