@@ -30,14 +30,14 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class StartAndStopService extends AppCompatActivity {
+public class MyTukxis extends AppCompatActivity {
 
     private static final int PERMISSOES = 1;
     private static Intent intent;
     private Intent intentSeekBar;
     private static DBManager db;
     private IntentIntegrator qrScan;
-    private static int idCarro;
+    private static int idCarro,idTomada;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
     private static String userId;
@@ -45,12 +45,15 @@ public class StartAndStopService extends AppCompatActivity {
     private static Button bTerminarViagem,bIniciarViagem;
     private DrawerLayout dLayout;
     private Toolbar toolbar;
+    private boolean ligadoTomada=false;
+    private boolean usouTomada;
+    private String titleAlert;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_start_and_stop_service);
+        setContentView(R.layout.activity_my_tukxis);
 
         sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
         editor = sharedPref.edit();
@@ -122,7 +125,7 @@ public class StartAndStopService extends AppCompatActivity {
                 // check selected menu item's id and replace a Fragment Accordingly
                 if (itemId == R.id.myTukxis)
                 {
-                    Intent intent =new Intent(getApplicationContext(),StartAndStopService.class);
+                    Intent intent =new Intent(getApplicationContext(),MyTukxis.class);
                     startActivity(intent);
                     dLayout.closeDrawers();
                     return true;
@@ -144,9 +147,11 @@ public class StartAndStopService extends AppCompatActivity {
                     iniciarCarregamento();
                     return true;
                 }
-                else if (itemId == R.id.acabarCarregar) {
+                else if (itemId == R.id.aCarregar) {
                     dLayout.closeDrawers();
-                    terminarCarregar();
+                    //terminarCarregar();
+                    Intent intent=new Intent(getApplicationContext(),CarsCharging.class);
+                    startActivity(intent);
                     return true;
                 }
                 else if (itemId == R.id.tucsDisponiveis) {
@@ -156,7 +161,9 @@ public class StartAndStopService extends AppCompatActivity {
                 }
                 else if (itemId == R.id.registoDiario) {
                     dLayout.closeDrawers();
-                    guardaKmsDiários();
+                    //guardaKmsDiários();
+                    Intent intent=new Intent(getApplicationContext(),Register.class);
+                    startActivity(intent);
                     return true;
                 }
                 return false;
@@ -180,7 +187,7 @@ public class StartAndStopService extends AppCompatActivity {
 
     public void seekBar(View v)
     {
-        Intent intentPrincipal = new Intent(StartAndStopService.this, IntroduzirPerBat.class);
+        Intent intentPrincipal = new Intent(MyTukxis.this, IntroduzirPerBat.class);
         startActivity(intentPrincipal);
     }
 
@@ -208,7 +215,10 @@ public class StartAndStopService extends AppCompatActivity {
     {
         if(!GpsService.getServicoIniciado())
         {
-            qrCode();
+            String mensagem= "If the car that you want to pick up is still connected to a socket, please," +
+                    "unplug it and use QR Code placed on the plug. Otherwise, please, skip this step";
+            titleAlert="You disconnect";
+            alerta(mensagem);
         }
         else
         {
@@ -223,9 +233,9 @@ public class StartAndStopService extends AppCompatActivity {
             //Para não permitir o serviço ser parado antes de ser iniciado.
             if(GpsService.getServicoIniciado())
             {
-                intentSeekBar.putExtra("opcao",1); //Para indicar que é para terminar a viagem
-                intentSeekBar.putExtra("idCarro",idCarro);
-                startActivity(intentSeekBar);
+                titleAlert="You connect";
+                String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
+                alerta(mensagem);
             }
             else
             {
@@ -270,9 +280,31 @@ public class StartAndStopService extends AppCompatActivity {
                 {
                     //converting the data to json
                     JSONObject obj = new JSONObject(result.getContents());
-                    //Guarda o valor que é lido do QrCode
-                    idCarro=Integer.parseInt(obj.getString("IdCarro"));
-                    confirmacaoIdTuc();
+                    if(ligadoTomada)
+                    {
+                        //Guarda o valor que é lido do Qr Code
+                        idTomada = Integer.parseInt(obj.getString("idTomada"));
+                        ligadoTomada=false;
+                        confirmacaoIdTuc(titleAlert+" plug", "idTomada", idTomada);
+                    }
+                    else if(!ligadoTomada)
+                    {
+                        //Guarda o valor que é lido do QrCode
+                        idCarro = Integer.parseInt(obj.getString("IdCarro"));
+
+                        if (usouTomada) {
+                            confirmacaoIdTuc(titleAlert+" car", "idCarro", idCarro);
+                        } else {
+                            if(!GpsService.getServicoIniciado()) {
+                                confirmacaoIdTuc("You picked up car", "idCarro", idCarro);
+                            }
+                            else if(GpsService.getServicoIniciado())
+                            {
+                                confirmacaoIdTuc("You drop off car", "idCarro", idCarro);
+
+                            }
+                        }
+                    }
                 }
                 catch (JSONException e)
                 {
@@ -328,7 +360,7 @@ public class StartAndStopService extends AppCompatActivity {
                         final int finalIndex =Integer.parseInt(value);
                         if (!isFinishing())
                         {
-                           new AlertDialog.Builder(StartAndStopService.this)
+                           new AlertDialog.Builder(MyTukxis.this)
                                     .setTitle("Alerta")
                                     .setMessage("Não pode negar estas permissões!!!")
                                     .setCancelable(false)
@@ -356,14 +388,47 @@ public class StartAndStopService extends AppCompatActivity {
         }
     }
 
-    public void confirmacaoIdTuc()
+    public void alerta(String mnsg)
     {
         runOnUiThread(()->
                 {
                     if (!isFinishing())
                     {
-                        new AlertDialog.Builder(StartAndStopService.this)
-                                .setTitle("You picked up car "+idCarro)
+                        new AlertDialog.Builder(MyTukxis.this)
+                                .setTitle("The app wants to access your camera")
+                                .setMessage(mnsg)
+                                .setCancelable(false)
+                                .setPositiveButton("Allow", new DialogInterface.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which)
+                                    {
+                                        ligadoTomada=true;
+                                        qrCode();
+                                    }
+                                })
+                                .setNegativeButton("Skip", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i)
+                                    {
+                                        ligadoTomada=false;
+                                        qrCode();
+                                    }
+                                })
+                                .show();
+                    }
+                }
+        );
+    }
+
+    public void confirmacaoIdTuc(String title,String tipo,int id)
+    {
+        runOnUiThread(()->
+                {
+                    if (!isFinishing())
+                    {
+                        new AlertDialog.Builder(MyTukxis.this)
+                                .setTitle(title+" "+id)
                                 .setMessage("Please, check and confirm")
                                 .setCancelable(false)
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener()
@@ -371,16 +436,42 @@ public class StartAndStopService extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which)
                                     {
-                                        //Vai para o intent de colocar a percentagem de bateria
-                                        intentSeekBar.putExtra("opcao",0); //Para indicar que é para iniciar a viagem
-                                        intentSeekBar.putExtra("idCarro",idCarro);
-                                        startActivity(intentSeekBar);
+                                        if(tipo.equals("idTomada"))
+                                        {
+                                            qrCode();
+                                            usouTomada=true;
+                                        }
+                                        else if(tipo.equals("idCarro"))
+                                        {
+                                            if(!GpsService.getServicoIniciado()) {
+                                                //Vai para o intent de colocar a percentagem de bateria
+                                                intentSeekBar.putExtra("opcao", 0); //Para indicar que é para iniciar a viagem
+                                                intentSeekBar.putExtra("idCarro", idCarro);
+                                                startActivity(intentSeekBar);
+                                            }
+                                            else if(GpsService.getServicoIniciado())
+                                            {
+                                                //Vai para o intent de colocar a percentagem de bateria
+                                                intentSeekBar.putExtra("opcao", 1); //Para indicar que é para iniciar a viagem
+                                                intentSeekBar.putExtra("idCarro", idCarro);
+                                                startActivity(intentSeekBar);
+                                            }
+                                        }
                                     }
                                 })
                                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        qrCode();
+                                        if(tipo.equals("idTomada"))
+                                        {
+                                            ligadoTomada=true;
+                                            qrCode();
+                                        }
+                                        else if(tipo.equals("idCarro"))
+                                        {
+                                            ligadoTomada=false;
+                                            qrCode();
+                                        }
                                     }
                                 })
                                 .show();
@@ -399,7 +490,7 @@ public class StartAndStopService extends AppCompatActivity {
                         final EditText input = new EditText(this);
                         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
 
-                        new AlertDialog.Builder(StartAndStopService.this)
+                        new AlertDialog.Builder(MyTukxis.this)
                                 .setTitle("Identificação")
                                 .setMessage("Insira o seu nome para poder ser identificado na aplicação")
                                 .setCancelable(false)
@@ -461,21 +552,21 @@ public class StartAndStopService extends AppCompatActivity {
     //Alterei aqui
     public void iniciarCarregamento()
     {
-        Intent intentCarregar=new Intent(StartAndStopService.this,Carregamento.class);
+        Intent intentCarregar=new Intent(MyTukxis.this,BeingCharging.class);
         intentCarregar.putExtra("opcaoCarregamento",1); //Para indicar que é para inicar carregamento
         startActivity(intentCarregar);
     }
 
     public void terminarCarregar()
     {
-        Intent intentCarregar=new Intent(StartAndStopService.this,Carregamento.class);
+        Intent intentCarregar=new Intent(MyTukxis.this,BeingCharging.class);
         intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
         startActivity(intentCarregar);
     }
 
     public void verTucsDisp()
     {
-        Intent intentVerTucsDisp=new Intent(StartAndStopService.this,VerTucsDisponiveis.class);
+        Intent intentVerTucsDisp=new Intent(MyTukxis.this,Fleet.class);
         startActivity(intentVerTucsDisp);
     }
 

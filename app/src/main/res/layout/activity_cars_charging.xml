@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".CarsCharging">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <!-- include your toolbar layout-->
+        <include layout="@layout/toolbar" />
+
+        <ListView
+            android:id="@+id/listaTucsAcarregar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="10">
+        </ListView>
+
+        <Button
+            android:id="@+id/bTerminarCarregamento"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:text="Terminar Carregamento"
+            android:onClick="terminarCarregar"
+            android:layout_weight="1"/>
+
+</LinearLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/nav_items" />
+</android.support.v4.widget.DrawerLayout>

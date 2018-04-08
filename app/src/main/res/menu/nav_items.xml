@@ -15,11 +15,11 @@
             android:orderInCategory="2"/>
         <item
             android:id="@+id/carregar"
-            android:title="Carregar Tuc-Tuc"
+            android:title="Begin charge car"
             android:orderInCategory="3"/>
         <item
-            android:id="@+id/acabarCarregar"
-            android:title="Terminar Carregamento"
+            android:id="@+id/aCarregar"
+            android:title="Cars charging"
             android:orderInCategory="4"/>
         <item
             android:id="@+id/tucsDisponiveis"
@@ -27,7 +27,7 @@
             android:orderInCategory="5"/>
         <item
             android:id="@+id/registoDiario"
-            android:title="Registar Kms diários"
+            android:title="Register"
             android:orderInCategory="6" />
     </group>
 </menu>

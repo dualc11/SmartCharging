@@ -1,7 +1,6 @@
 package com.example.luis.smartcharging;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -19,7 +18,7 @@ import java.util.Map;
 
 public class VolleyRequest {
 
-    private static final RequestQueue queue=Volley.newRequestQueue(StartAndStopService.getContext());
+    private static final RequestQueue queue=Volley.newRequestQueue(MyTukxis.getContext());
     private static final String url="http://66.175.221.248:3000/test";
     //private static final String url="http://10.2.0.70:3000/teste";
 

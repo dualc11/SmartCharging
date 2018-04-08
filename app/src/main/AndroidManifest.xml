@@ -24,7 +24,7 @@
             android:name=".GpsService"
             android:exported="false" />
 
-        <activity android:name=".StartAndStopService">
+        <activity android:name=".MyTukxis">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -32,9 +32,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".IntroduzirPerBat" />
-        <activity android:name=".Carregamento" />
-        <activity android:name=".VerTucsDisponiveis" />
-        <activity android:name=".MyTrip"></activity>
+        <activity android:name=".BeingCharging" />
+        <activity android:name=".Fleet" />
+        <activity android:name=".MyTrip" />
+        <activity android:name=".CarsCharging" />
+        <activity android:name=".Register"></activity>
     </application>
 
 </manifest>

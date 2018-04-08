@@ -1,17 +1,12 @@
 package com.example.luis.smartcharging;
 
-import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class MyTrip extends StartAndStopService {
+public class MyTrip extends MyTukxis {
 
     private Toolbar toolbar;
     private ListView listaMyTrip;

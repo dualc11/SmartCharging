@@ -1,10 +1,17 @@
 package com.example.luis.smartcharging;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Build;
 import android.os.Environment;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
+import android.view.View;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -13,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class DBManager {
@@ -360,7 +368,7 @@ public class DBManager {
             try{
                 String sql = "INSERT INTO "+TABLE_REGISTO_DIARIO+"("+DATA+","+DISTANCIADIARIA+","+
                 USERID+")"+
-                        "VALUES('"+dataActual+"',"+distanciaDiaria+",'"+StartAndStopService.getUserId()+"')";
+                        "VALUES('"+dataActual+"',"+distanciaDiaria+",'"+ MyTukxis.getUserId()+"')";
 
                 stm = db.compileStatement(sql);
 
@@ -460,6 +468,114 @@ public class DBManager {
         }
         if(res){return true;}else{return false;}
         //return true;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static synchronized void getRegister(Context context,int nDias,boolean justToday)
+    {
+        Cursor c;
+        int i = 0;
+        boolean temRegisto=false;
+        preencheLinha("Nr Carro", "Nr Viagem", "Km", context, i, 3,justToday);
+        for(int nrDias=0;nrDias<nDias;nrDias++)
+        {
+            String dataViagem=convertData(nrDias);
+            if(!justToday)
+            {
+                i++;
+                preencheLinha("",dataViagem,"",context,i,1,justToday);
+               /* if(nrDias==0)
+                {
+                    i++;
+                    preencheLinha("", "TODAY", "", context, i, 1,justToday);
+                }
+                else if(nrDias==1)
+                {
+                    i++;
+                    preencheLinha("", "YESTERDAY", "", context, i, 1,justToday);
+
+                }*/
+
+            }
+
+            c = db.rawQuery("SELECT " + VIAGEMID + "," + DISTANCIAKM + "," + CARROID +
+                    " FROM " + TABLE_VIAGEM_INFO + " WHERE " + DATA + "='" + dataViagem + "'", null);
+            double kmsTotais = 0;
+
+            while (c.moveToNext()) {
+                temRegisto=true;
+                i++;
+                kmsTotais += c.getDouble(1);
+                String viagemId = Integer.toString(c.getInt(0));
+                String distancia = Double.toString(c.getDouble(1));
+                String carroId = Integer.toString(c.getInt(2));
+                preencheLinha(carroId, viagemId, distancia, context, i, 3,justToday);
+            }
+            if (!temRegisto) {
+                i++;
+                preencheLinha("", "Não tem nenhum registo de viagens diárias", "", context, i, 1,justToday);
+            }
+            i++;
+            preencheLinha("", "", "", context, i, 1,justToday);
+            i++;
+            preencheLinha("", "Total Km diários: "+kmsTotais, "", context, i, 1,justToday);
+            i++;
+            preencheLinha("", "", "", context, i, 1,justToday);
+        }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static void preencheLinha(String atr1, String atr2, String atr3, Context context,int i,int nrAtr,boolean justToday)
+    {
+        TableLayout tableLayout;
+        if(justToday) {
+            tableLayout = FragmentToday.getTableLayout();
+        }
+        else
+        {
+            tableLayout=FragmentHistory.getTableLayout();
+        }
+        TableRow row= new TableRow(context);
+        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT);
+        row.setLayoutParams(lp);
+        TextView tv;
+        //Para calcular o total Km di?rio
+        if(nrAtr==1)
+        {
+            tv= new TextView(context);
+            //tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            tv.setText(atr2);
+            row.addView(tv);
+            tableLayout.addView(row,i);
+            return;
+        }
+
+        for(int indice=0;indice<nrAtr;indice++) {
+            tv= new TextView(context);
+            tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            switch (indice)
+            {
+                case 0:tv.setText(atr1);break;
+                case 1:tv.setText(atr2);break;
+                case 2:tv.setText(atr3);break;
+            }
+            row.addView(tv);
+        }
+        tableLayout.addView(row,i);
+    }
+
+    public static String convertData(int i)
+    {
+        String dataViagem = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+
+        String dia=dataViagem.substring(8,10);
+        int day=Integer.parseInt(dia);
+        day=day-i;
+        String newDia="0"+Integer.toString(day);
+
+        String data=dataViagem.substring(0,8);
+        data+=newDia;
+        return data;
+
     }
 
     public static JSONArray getJsonArray(){return jsonArray;}

@@ -18,7 +18,6 @@ import org.json.JSONException;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,7 +45,7 @@ public class GpsService extends Service implements LocationListener {
     public void onCreate() {
 
         super.onCreate();
-        db = StartAndStopService.getDb();
+        db = MyTukxis.getDb();
 
         viagemId = DBManager.getIdViagemAnterior();
         viagemId++;
@@ -54,7 +53,7 @@ public class GpsService extends Service implements LocationListener {
         //Mudei aqui
         //bateriaInicial = rand.nextInt(11);
         bateriaInicial= IntroduzirPerBat.getPercentagemBat();
-        db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, StartAndStopService.getIdCarro());//Passar idCarro também
+        db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, MyTukxis.getIdCarro());//Passar idCarro também
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, TIME_UPDATES, DISTANCE_UPDATES, this);
@@ -81,8 +80,8 @@ public class GpsService extends Service implements LocationListener {
             db.updateKmBateriaFinal(kmViagem, bateriaFinal, viagemId);
 
             //Enviar dados da viagem para o servidor
-            String idCarro=Integer.toString(StartAndStopService.getIdCarro());
-            String idDriver=StartAndStopService.getUserId();
+            String idCarro=Integer.toString(MyTukxis.getIdCarro());
+            String idDriver= MyTukxis.getUserId();
             String batInicial=Integer.toString(bateriaInicial);
             String batFinal=Integer.toString(bateriaFinal);
             String kmsViagem=Double.toString(kmViagem);
@@ -104,7 +103,7 @@ public class GpsService extends Service implements LocationListener {
     }
 
     //O serviço chama este método quando outro componente da aplicação inicia o serviço chamando o
-    //método StartAndStopService() iniciando o serviço em segundo plano indefinidamente até ser chamado o
+    //método MyTukxis() iniciando o serviço em segundo plano indefinidamente até ser chamado o
     //método stopService() (chamado por outro componente) ou stopSelf() (interrompido pelo próprio serviço)..
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
