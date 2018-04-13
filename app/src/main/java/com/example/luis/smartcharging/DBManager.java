@@ -484,18 +484,6 @@ public class DBManager {
             {
                 i++;
                 preencheLinha("",dataViagem,"",context,i,1,justToday);
-               /* if(nrDias==0)
-                {
-                    i++;
-                    preencheLinha("", "TODAY", "", context, i, 1,justToday);
-                }
-                else if(nrDias==1)
-                {
-                    i++;
-                    preencheLinha("", "YESTERDAY", "", context, i, 1,justToday);
-
-                }*/
-
             }
 
             c = db.rawQuery("SELECT " + VIAGEMID + "," + DISTANCIAKM + "," + CARROID +
@@ -538,7 +526,7 @@ public class DBManager {
         TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT);
         row.setLayoutParams(lp);
         TextView tv;
-        //Para calcular o total Km di?rio
+        //Para calcular o total Km diários ou outros avisos
         if(nrAtr==1)
         {
             tv= new TextView(context);
