@@ -6,28 +6,37 @@
                 Menu items with icon and Title
         -->
         <item
-            android:id="@+id/myTukxis"
-            android:title="My Tukxi"
-            android:orderInCategory="1"/>
+            android:id="@+id/home"
+            android:title="Home"
+            android:orderInCategory="1"
+            android:icon="@drawable/home"/>
+        <item
+            android:id="@+id/pickUp"
+            android:title="Pick up a car"
+            android:orderInCategory="2"/>
+        <item
+            android:id="@+id/dropOff"
+            android:title="Drop off a car"
+            android:orderInCategory="3"/>
         <item
             android:id="@+id/myTrip"
             android:title="My Trip"
-            android:orderInCategory="2"/>
+            android:orderInCategory="4"/>
         <item
             android:id="@+id/carregar"
             android:title="Begin charge car"
-            android:orderInCategory="3"/>
+            android:orderInCategory="5"/>
         <item
             android:id="@+id/aCarregar"
             android:title="Cars charging"
-            android:orderInCategory="4"/>
+            android:orderInCategory="6"/>
         <item
             android:id="@+id/tucsDisponiveis"
-            android:title="Ver Tucs Disponíveis"
-            android:orderInCategory="5"/>
+            android:title="Fleet"
+            android:orderInCategory="7"/>
         <item
             android:id="@+id/registoDiario"
             android:title="Register"
-            android:orderInCategory="6" />
+            android:orderInCategory="8" />
     </group>
 </menu>

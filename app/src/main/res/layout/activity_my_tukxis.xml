@@ -12,26 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="2">
+        android:weightSum="2"
+        android:background="@drawable/background">
         <!-- include your toolbar layout-->
         <include layout="@layout/toolbar" />
-
-    <Button
-        android:id="@+id/bPickUpTukxi"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:onClick="iniciarServico"
-        android:text="Pick up a car" />
-
-    <Button
-        android:id="@+id/bPickOffTukxi"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:text="Pick off a car"
-        android:onClick="pararServico"/>
-
 
 </LinearLayout>
 
@@ -40,5 +24,5 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/nav_items" />
+        app:menu="@menu/nav_items"/>
 </android.support.v4.widget.DrawerLayout>

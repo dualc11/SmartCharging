@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@color/colorPrimary"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
-    app:navigationIcon="@mipmap/ic_launcher"
+    app:navigationIcon="@drawable/menu"
     app:titleTextColor="#FFF">
     <!-- navigation button and title for the Toolbar-->
 </android.support.v7.widget.Toolbar>

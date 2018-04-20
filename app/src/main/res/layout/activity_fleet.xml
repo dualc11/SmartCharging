@@ -15,16 +15,6 @@
         <!-- include your toolbar layout-->
         <include layout="@layout/toolbar" />
 
-    <TextView
-        android:id="@+id/tucsDisp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tuc-Tucs disponíveis"
-        android:textSize="23dp"
-        android:layout_marginTop="23dp"
-        android:layout_marginBottom="23dp"
-        android:textAlignment="center"/>
-
 <ListView
         android:id="@+id/listaTucsDisp"
         android:layout_width="wrap_content"

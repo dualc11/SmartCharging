@@ -19,7 +19,7 @@ public class MyTrip extends MyTukxis {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-        toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
+        //toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
         getSupportActionBar().setTitle("My Trip");
         navigationClick(toolbar);
 

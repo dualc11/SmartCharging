@@ -61,7 +61,7 @@ public class MyTukxis extends AppCompatActivity {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-        toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
+        //toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
 
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
@@ -123,11 +123,27 @@ public class MyTukxis extends AppCompatActivity {
                 //Fragment frag = null; // create a Fragment Object
                 int itemId = menuItem.getItemId(); // get selected menu item's id
                 // check selected menu item's id and replace a Fragment Accordingly
-                if (itemId == R.id.myTukxis)
+                if(itemId==R.id.home)
                 {
-                    Intent intent =new Intent(getApplicationContext(),MyTukxis.class);
-                    startActivity(intent);
                     dLayout.closeDrawers();
+                    Intent intent= new Intent(getApplicationContext(),MyTukxis.class);
+                    startActivity(intent);
+                    return true;
+                }
+                else if (itemId == R.id.pickUp)
+                {
+                    dLayout.closeDrawers();
+                    iniciarServico();
+                    return true;
+                }
+                else if (itemId == R.id.dropOff)
+                {
+                    dLayout.closeDrawers();
+                    try {
+                        pararServico();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     return true;
                 }
                 else if (itemId == R.id.myTrip) {
@@ -211,7 +227,7 @@ public class MyTukxis extends AppCompatActivity {
     }
 
     //Método para iniciar uma rota
-   public void iniciarServico(View v)
+   public void iniciarServico()
     {
         if(!GpsService.getServicoIniciado())
         {
@@ -227,7 +243,7 @@ public class MyTukxis extends AppCompatActivity {
     }
 
     //Método para terminar uma rota
-    public void pararServico(View v) throws JSONException {
+    public void pararServico() throws JSONException {
         if(intent!=null)
         {
             //Para não permitir o serviço ser parado antes de ser iniciado.
