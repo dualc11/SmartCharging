@@ -509,6 +509,7 @@ public class DBManager {
             preencheLinha("", "Total Km diários: "+kmsTotais, "", context, i, 1,justToday);
             i++;
             preencheLinha("", "", "", context, i, 1,justToday);
+            temRegisto=false;
         }
     }
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -558,7 +559,14 @@ public class DBManager {
         String dia=dataViagem.substring(8,10);
         int day=Integer.parseInt(dia);
         day=day-i;
-        String newDia="0"+Integer.toString(day);
+        String newDia="";
+        if(day/10==0) {
+            newDia = "0" + Integer.toString(day);
+        }
+        else
+        {
+            newDia=Integer.toString(day);
+        }
 
         String data=dataViagem.substring(0,8);
         data+=newDia;
