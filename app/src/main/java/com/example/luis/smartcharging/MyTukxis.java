@@ -34,20 +34,15 @@ public class MyTukxis extends AppCompatActivity {
 
     private static final int PERMISSOES = 1;
     private static Intent intent;
-    private Intent intentSeekBar;
     private static DBManager db;
     private IntentIntegrator qrScan;
-    private static int idCarro,idTomada;
+    private static int idCarro;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
     private static String userId;
     private static Context context;
-    private static Button bTerminarViagem,bIniciarViagem;
     private DrawerLayout dLayout;
     private Toolbar toolbar;
-    private boolean ligadoTomada=false;
-    private boolean usouTomada;
-    private String titleAlert;
 
 
     @Override
@@ -61,16 +56,10 @@ public class MyTukxis extends AppCompatActivity {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-        //toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
 
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
 
-        /*bIniciarViagem=findViewById(R.id.bIniciarViagem);
-        bTerminarViagem=findViewById(R.id.bPararViagem);
-        buttonsVisibility();*/
-
-        intentSeekBar= new Intent(this,IntroduzirPerBat.class);
         intent = new Intent(this, GpsService.class);
 
         //Verifica as permissões - não avança até que todas as permissões forem cedidas
@@ -165,7 +154,6 @@ public class MyTukxis extends AppCompatActivity {
                 }
                 else if (itemId == R.id.aCarregar) {
                     dLayout.closeDrawers();
-                    //terminarCarregar();
                     Intent intent=new Intent(getApplicationContext(),CarsCharging.class);
                     startActivity(intent);
                     return true;
@@ -177,7 +165,6 @@ public class MyTukxis extends AppCompatActivity {
                 }
                 else if (itemId == R.id.registoDiario) {
                     dLayout.closeDrawers();
-                    //guardaKmsDiários();
                     Intent intent=new Intent(getApplicationContext(),Register.class);
                     startActivity(intent);
                     return true;
@@ -185,20 +172,6 @@ public class MyTukxis extends AppCompatActivity {
                 return false;
             }
         });
-    }
-
-    public void buttonsVisibility()
-    {
-        if(GpsService.getServicoIniciado())
-        {
-            bIniciarViagem.setVisibility(View.GONE);
-            bTerminarViagem.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            bIniciarViagem.setVisibility(View.VISIBLE);
-            bTerminarViagem.setVisibility(View.GONE);
-        }
     }
 
     public void seekBar(View v)
@@ -233,8 +206,7 @@ public class MyTukxis extends AppCompatActivity {
         {
             String mensagem= "If the car that you want to pick up is still connected to a socket, please," +
                     "unplug it and use QR Code placed on the plug. Otherwise, please, skip this step";
-            titleAlert="You disconnect";
-            alerta(mensagem);
+            alerta(mensagem,false);
         }
         else
         {
@@ -249,9 +221,8 @@ public class MyTukxis extends AppCompatActivity {
             //Para não permitir o serviço ser parado antes de ser iniciado.
             if(GpsService.getServicoIniciado())
             {
-                titleAlert="You connect";
                 String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
-                alerta(mensagem);
+                alerta(mensagem,true);
             }
             else
             {
@@ -296,31 +267,8 @@ public class MyTukxis extends AppCompatActivity {
                 {
                     //converting the data to json
                     JSONObject obj = new JSONObject(result.getContents());
-                    if(ligadoTomada)
-                    {
-                        //Guarda o valor que é lido do Qr Code
-                        idTomada = Integer.parseInt(obj.getString("idTomada"));
-                        ligadoTomada=false;
-                        confirmacaoIdTuc(titleAlert+" plug", "idTomada", idTomada);
-                    }
-                    else if(!ligadoTomada)
-                    {
-                        //Guarda o valor que é lido do QrCode
-                        idCarro = Integer.parseInt(obj.getString("IdCarro"));
-
-                        if (usouTomada) {
-                            confirmacaoIdTuc(titleAlert+" car", "idCarro", idCarro);
-                        } else {
-                            if(!GpsService.getServicoIniciado()) {
-                                confirmacaoIdTuc("You picked up car", "idCarro", idCarro);
-                            }
-                            else if(GpsService.getServicoIniciado())
-                            {
-                                confirmacaoIdTuc("You drop off car", "idCarro", idCarro);
-
-                            }
-                        }
-                    }
+                    idCarro = Integer.parseInt(obj.getString("IdCarro"));
+                    confirmacaoIdTuc("You picked up"+" car",idCarro);
                 }
                 catch (JSONException e)
                 {
@@ -404,7 +352,7 @@ public class MyTukxis extends AppCompatActivity {
         }
     }
 
-    public void alerta(String mnsg)
+    public void alerta(String mnsg,boolean carregar)
     {
         runOnUiThread(()->
                 {
@@ -419,15 +367,29 @@ public class MyTukxis extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which)
                                     {
-                                        ligadoTomada=true;
-                                        qrCode();
+                                        //Drop off car
+                                        if(carregar)
+                                        {
+                                            //iniciarCarregamento();
+                                            Intent intent = new Intent(getApplicationContext(),BeingCharging.class);
+                                            intent.putExtra("opcaoCarregamento",1);
+                                            intent.putExtra("iniciarViagem",1);
+                                            startActivity(intent);
+                                        }
+                                        else
+                                        {
+                                            //terminarCarregar();
+                                            Intent intent = new Intent(getApplicationContext(),BeingCharging.class);
+                                            intent.putExtra("opcaoCarregamento",2);
+                                            intent.putExtra("iniciarViagem",2);
+                                            startActivity(intent);
+                                        }
                                     }
                                 })
                                 .setNegativeButton("Skip", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i)
                                     {
-                                        ligadoTomada=false;
                                         qrCode();
                                     }
                                 })
@@ -437,7 +399,7 @@ public class MyTukxis extends AppCompatActivity {
         );
     }
 
-    public void confirmacaoIdTuc(String title,String tipo,int id)
+    public void confirmacaoIdTuc(String title,int id)
     {
         runOnUiThread(()->
                 {
@@ -452,42 +414,16 @@ public class MyTukxis extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which)
                                     {
-                                        if(tipo.equals("idTomada"))
-                                        {
-                                            qrCode();
-                                            usouTomada=true;
-                                        }
-                                        else if(tipo.equals("idCarro"))
-                                        {
-                                            if(!GpsService.getServicoIniciado()) {
-                                                //Vai para o intent de colocar a percentagem de bateria
-                                                intentSeekBar.putExtra("opcao", 0); //Para indicar que é para iniciar a viagem
-                                                intentSeekBar.putExtra("idCarro", idCarro);
-                                                startActivity(intentSeekBar);
-                                            }
-                                            else if(GpsService.getServicoIniciado())
-                                            {
-                                                //Vai para o intent de colocar a percentagem de bateria
-                                                intentSeekBar.putExtra("opcao", 1); //Para indicar que é para iniciar a viagem
-                                                intentSeekBar.putExtra("idCarro", idCarro);
-                                                startActivity(intentSeekBar);
-                                            }
-                                        }
+                                        Intent intent=new Intent(getApplicationContext(),IntroduzirPerBat.class);
+                                        intent.putExtra("opcao",0);
+                                        intent.putExtra("idCarro",idCarro);
+                                        startActivity(intent);
                                     }
                                 })
                                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        if(tipo.equals("idTomada"))
-                                        {
-                                            ligadoTomada=true;
-                                            qrCode();
-                                        }
-                                        else if(tipo.equals("idCarro"))
-                                        {
-                                            ligadoTomada=false;
-                                            qrCode();
-                                        }
+                                        qrCode();
                                     }
                                 })
                                 .show();
