@@ -33,7 +33,7 @@ public class GpsService extends Service implements LocationListener {
     private Timer timer;    //Timer
     private TimerTask timerTask;    //Ação que irá ser desempenhada de x em x tempo.
     private String data;
-    private double longitude, latitude, altitude, longitudeAnterior;
+    private static double longitude, latitude, altitude, longitudeAnterior;
     private final Handler handler = new Handler();
     private int bateriaInicial, bateriaFinal;
     private boolean guardouAlgumaCoordenada;
@@ -235,4 +235,6 @@ public class GpsService extends Service implements LocationListener {
     {
         return servicoIniciado;
     }
+    public static double getLongitude(){return longitude;}
+    public static double getLatitude(){return latitude;}
 }

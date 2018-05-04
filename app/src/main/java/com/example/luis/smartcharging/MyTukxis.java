@@ -138,7 +138,7 @@ public class MyTukxis extends AppCompatActivity {
                 else if (itemId == R.id.myTrip) {
                     dLayout.closeDrawers();
                     if(GpsService.getServicoIniciado()) {
-                        Intent intent = new Intent(getApplicationContext(), MyTrip.class);
+                        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
                         startActivity(intent);
                     }
                     else
