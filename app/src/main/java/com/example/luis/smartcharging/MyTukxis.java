@@ -84,6 +84,7 @@ public class MyTukxis extends AppCompatActivity {
         }
 
         context=getApplicationContext();
+        Log.i("AQUI","ASDASDASD");
     }
 
     //Método para saber quando o utilizador carregou na toolbar

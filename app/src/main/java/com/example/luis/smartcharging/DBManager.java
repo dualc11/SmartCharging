@@ -470,6 +470,29 @@ public class DBManager {
         //return true;
     }
 
+    public static synchronized ArrayList<DadosCharging> tucsEmCarregamento() {
+        ArrayList<DadosCharging> carrosCarregar = new ArrayList<DadosCharging>();
+        Cursor c;
+
+        Log.i("QUERY", "SELECT " + HORAINICIO + "," + CARROID + "," + TOMADAID + " FROM "
+                + TABLE_CARREGAMENTOS + " WHERE " + HORAFIM + " IS NULL");
+
+        c = db.rawQuery("SELECT " + HORAINICIO + "," + TUCID + "," + TOMADAID + " FROM "
+                + TABLE_CARREGAMENTOS + " WHERE " + HORAFIM + " IS NULL", null);
+
+        while (c.moveToNext()) {
+            String horaInicio = c.getString(0);
+            String carId = Integer.toString(c.getInt(1));
+            String tomadaId = Integer.toString(c.getInt(2));
+            String tempoEstimado = "2h";
+            int bateriaEstimada = 7;
+
+            DadosCharging dados = new DadosCharging(horaInicio, carId, tomadaId, tempoEstimado, bateriaEstimada);
+            carrosCarregar.add(dados);
+        }
+        return carrosCarregar;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static synchronized void getRegister(Context context,int nDias,boolean justToday)
     {
