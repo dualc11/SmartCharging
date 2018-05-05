@@ -43,6 +43,7 @@ public class MyTukxis extends AppCompatActivity {
     private static Context context;
     private DrawerLayout dLayout;
     private Toolbar toolbar;
+    private boolean pickUp=true;
 
 
     @Override
@@ -268,7 +269,13 @@ public class MyTukxis extends AppCompatActivity {
                     //converting the data to json
                     JSONObject obj = new JSONObject(result.getContents());
                     idCarro = Integer.parseInt(obj.getString("IdCarro"));
-                    confirmacaoIdTuc("You picked up"+" car",idCarro);
+                    if(!GpsService.getServicoIniciado()) {
+                        confirmacaoIdTuc("You picked up" + " car", idCarro);
+                    }
+                    else
+                    {
+                        confirmacaoIdTuc("You dropped off" + " car", idCarro);
+                    }
                 }
                 catch (JSONException e)
                 {
@@ -415,7 +422,13 @@ public class MyTukxis extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog, int which)
                                     {
                                         Intent intent=new Intent(getApplicationContext(),IntroduzirPerBat.class);
-                                        intent.putExtra("opcao",0);
+                                        if(!GpsService.getServicoIniciado()) {
+                                            intent.putExtra("opcao", 0);
+                                        }
+                                        else
+                                        {
+                                            intent.putExtra("opcao",1);
+                                        }
                                         intent.putExtra("idCarro",idCarro);
                                         startActivity(intent);
                                     }
@@ -531,4 +544,6 @@ public class MyTukxis extends AppCompatActivity {
     public static int getIdCarro(){return idCarro;}
     public static Context getContext(){return context;}
     public static Intent getIntentGps(){return intent;}
+
+    public static void setTucId(int tucId){idCarro=tucId;}//Mudei aqui
 }
