@@ -1,5 +1,6 @@
 package com.example.luis.smartcharging;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,6 +37,9 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
     private Timer timer;    //Timer
     private TimerTask timerTask;    //Ação que irá ser desempenhada de x em x tempo.
     private Handler handler=new Handler();
+    int i=0;
+    private double latAntiga,longAntiga,latAtual,longAtual;
+    private Marker marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +52,6 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-        //toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
         getSupportActionBar().setTitle("My Trip");
         navigationClick(toolbar);
 
@@ -82,15 +87,30 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
                     public void run() {
                         if(mMap!=null)
                         {
-
-                            double longitude=GpsService.getLongitude();
-                            double latitude=GpsService.getLatitude();
-                            if(longitude!=0 && latitude!=0) {
+                            longAntiga=longAtual;
+                            latAntiga=latAtual;
+                            longAtual=GpsService.getLongitude();
+                            latAtual=GpsService.getLatitude();
+                            if(longAtual!=0 && latAtual!=0) {
                                 // Add a marker in Sydney and move the camera
-                                LatLng coordenadas = new LatLng(latitude, longitude);
-                                mMap.clear();
-                                mMap.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
-                                //mMap.moveCamera(CameraUpdateFactory.newLatLng(coordenadas));
+                                LatLng coordenadas = new LatLng(latAtual, longAtual);
+                                //mMap.clear();
+                                if(marker!=null)
+                                {
+                                    marker.remove();
+                                }
+                                marker=mMap.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
+                                if(i==0) {
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
+                                    i++;
+                                }
+                                if(i>=2) {
+                                    Polyline line = mMap.addPolyline(new PolylineOptions()
+                                            .add(new LatLng(latAntiga, longAntiga), new LatLng(latAtual, longAtual))
+                                            .width(5)
+                                            .color(Color.RED));
+                                }
+                                i++;
                             }
                         }
                     }
@@ -110,31 +130,13 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         listaMyTrip.setAdapter(listaAdapter);
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(32.64414499363083, -16.91396713256836);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Madeira"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        marker=mMap.addMarker(new MarkerOptions().position(sydney).title("Madeira"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 7));
     }
-
-    /*public void mudar(View v)
-    {
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(32.67749666,-17.07856351);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Madeira"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-    }*/
 }
