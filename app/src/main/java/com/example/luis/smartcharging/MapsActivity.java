@@ -1,5 +1,6 @@
 package com.example.luis.smartcharging;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
@@ -22,6 +23,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONException;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,9 +40,10 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
     private Timer timer;    //Timer
     private TimerTask timerTask;    //Ação que irá ser desempenhada de x em x tempo.
     private Handler handler=new Handler();
-    int i=0;
+    private int i;
     private double latAntiga,longAntiga,latAtual,longAtual;
-    private Marker marker;
+    private  Marker marker;
+    private boolean mapaPreenchido=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +56,14 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-        getSupportActionBar().setTitle("My Trip");
+        getSupportActionBar().setTitle("Current tour");
         navigationClick(toolbar);
 
         listaMyTrip=findViewById(R.id.listaMyTrip);
         myTripInfo =new String [2];
         preencheListaMyTrip();
-
+        i=0;
+        mapaPreenchido=false;
         startTimer();
     }
 
@@ -91,25 +96,44 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
                             latAntiga=latAtual;
                             longAtual=GpsService.getLongitude();
                             latAtual=GpsService.getLatitude();
-                            if(longAtual!=0 && latAtual!=0) {
-                                // Add a marker in Sydney and move the camera
+
+                            //Caso o GPS já tenha encontrado alguma coordenada
+                            if(longAtual!=0 && latAtual!=0)
+                            {
+
                                 LatLng coordenadas = new LatLng(latAtual, longAtual);
-                                //mMap.clear();
+
+                                /*Caso o utilizador tenha entrado agora na actividade e já tenha coordenadas
+                                na base de dados, foi desenhado o caminho no mapa com essas coordenadas e
+                                agora a última coordenada é a do marker que está no mapa e a próxima é a que
+                                o sinal de GPS apanhar*/
+                                if(i==0 && mapaPreenchido) {
+                                    marker=DBManager.getMarker();
+                                    LatLng position = marker.getPosition();
+                                    latAntiga = position.latitude;
+                                    longAntiga = position.longitude;
+                                    mapaPreenchido=false;
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
+                                }
+                                /*Caso não tenha coordenadas da viagem atual na base de dados*/
+                                else if(i==0 && !mapaPreenchido){
+                                    longAntiga=longAtual;
+                                    latAntiga=latAtual;
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
+                                }
+                                //removemos o marker antigo para colocar o novo
                                 if(marker!=null)
                                 {
                                     marker.remove();
                                 }
+                                //Adicionamos o marker ao mapa
                                 marker=mMap.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
-                                if(i==0) {
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
-                                    i++;
-                                }
-                                if(i>=2) {
+
+                                    //Desenhamos uma linha entre a coordenada anterior e a atual/nova
                                     Polyline line = mMap.addPolyline(new PolylineOptions()
                                             .add(new LatLng(latAntiga, longAntiga), new LatLng(latAtual, longAtual))
                                             .width(5)
                                             .color(Color.RED));
-                                }
                                 i++;
                             }
                         }
@@ -133,10 +157,12 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(32.64414499363083, -16.91396713256836);
-        marker=mMap.addMarker(new MarkerOptions().position(sydney).title("Madeira"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 7));
+        mapaPreenchido= DBManager.preencheMapa(mMap);
     }
+
+    public void terminarViagem(View v) throws JSONException {
+        pararServico();
+    }
+
+
 }

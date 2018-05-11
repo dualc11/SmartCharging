@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.RequiresApi;
@@ -13,6 +14,14 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,6 +86,7 @@ public class DBManager {
     private static SQLiteDatabase db;
     private static JSONObject jsonObj;
     private static JSONArray jsonArray;
+    private static Marker marker;
 
     public DBManager() {
 
@@ -474,9 +484,6 @@ public class DBManager {
         ArrayList<DadosCharging> carrosCarregar = new ArrayList<DadosCharging>();
         Cursor c;
 
-        Log.i("QUERY", "SELECT " + HORAINICIO + "," + CARROID + "," + TOMADAID + " FROM "
-                + TABLE_CARREGAMENTOS + " WHERE " + HORAFIM + " IS NULL");
-
         c = db.rawQuery("SELECT " + HORAINICIO + "," + TUCID + "," + TOMADAID + " FROM "
                 + TABLE_CARREGAMENTOS + " WHERE " + HORAFIM + " IS NULL", null);
 
@@ -597,5 +604,53 @@ public class DBManager {
 
     }
 
+    public static synchronized boolean preencheMapa(GoogleMap map)
+    {
+        Cursor c;
+        //Marker marker=null;
+        double longAtual=0,latAtual=0,longAntiga=0,latAntiga=0;
+        int i=0;
+        boolean temResultados=false;
+
+        c = db.rawQuery("SELECT " + LONGITUDE +","+LATITUDE+" FROM "+TABLE_GPS_LOGGER+
+                " WHERE " +VIAGEMID+"="+GpsService.getIdViagem(), null);
+
+        while (c.moveToNext())
+        {
+            if(map!=null)
+            {
+                longAntiga=longAtual;
+                latAntiga=latAtual;
+                longAtual=c.getDouble(0);
+                latAtual=c.getDouble(1);
+                if(longAtual!=0 && latAtual!=0) {
+                    // Add a marker in Sydney and move the camera
+                    LatLng coordenadas = new LatLng(latAtual, longAtual);
+
+                    if(marker!=null)
+                    {
+                        marker.remove();
+                    }
+                    marker=map.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
+
+                    if(i==0) {
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
+                        //i++;
+                    }
+                    if(i>=1) {
+                        Polyline line = map.addPolyline(new PolylineOptions()
+                                .add(new LatLng(latAntiga, longAntiga), new LatLng(latAtual, longAtual))
+                                .width(5)
+                                .color(Color.RED));
+                    }
+                    i++;
+                }
+                temResultados=true;
+            }
+        }
+        return temResultados;
+    }
+
     public static JSONArray getJsonArray(){return jsonArray;}
+    public static Marker getMarker(){return marker;}
 }

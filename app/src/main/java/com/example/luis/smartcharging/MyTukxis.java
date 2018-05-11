@@ -1,5 +1,6 @@
 package com.example.luis.smartcharging;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -43,7 +44,6 @@ public class MyTukxis extends AppCompatActivity {
     private static Context context;
     private DrawerLayout dLayout;
     private Toolbar toolbar;
-    private boolean pickUp=true;
 
 
     @Override
@@ -84,7 +84,6 @@ public class MyTukxis extends AppCompatActivity {
         }
 
         context=getApplicationContext();
-        Log.i("AQUI","ASDASDASD");
     }
 
     //Método para saber quando o utilizador carregou na toolbar
@@ -206,8 +205,10 @@ public class MyTukxis extends AppCompatActivity {
     {
         if(!GpsService.getServicoIniciado())
         {
-            String mensagem= "If the car that you want to pick up is still connected to a socket, please," +
-                    "unplug it and use QR Code placed on the plug. Otherwise, please, skip this step";
+            /*String mensagem= "If the car that you want to pick up is still connected to a socket, please," +
+                    "unplug it and use QR Code placed on the plug. Otherwise, please, skip this step";*/
+            String mensagem="The car that you want pick up is charging? If not please click 'No' and read car code."+
+            " Else click 'Yes'.";
             alerta(mensagem,false);
         }
         else
@@ -223,12 +224,14 @@ public class MyTukxis extends AppCompatActivity {
             //Para não permitir o serviço ser parado antes de ser iniciado.
             if(GpsService.getServicoIniciado())
             {
-                String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
+                //String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
+                String mensagem="You want put your car charging? If not please click 'No' and read car code."+
+                        " Else click 'Yes'.";
                 alerta(mensagem,true);
             }
             else
             {
-                Toast.makeText(this,"Não estava uma viagem em curso!",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(),"Não estava uma viagem em curso!",Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -260,7 +263,7 @@ public class MyTukxis extends AppCompatActivity {
             //if qrcode has nothing in it
             if (result.getContents() == null)
             {
-                Toast.makeText(this, "Result Not Found", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Result Not Found", Toast.LENGTH_LONG).show();
             }
             else
             {
@@ -281,7 +284,7 @@ public class MyTukxis extends AppCompatActivity {
                 catch (JSONException e)
                 {
                     e.printStackTrace();
-                    Toast.makeText(this, result.getContents(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), result.getContents(), Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -370,7 +373,7 @@ public class MyTukxis extends AppCompatActivity {
                                 .setTitle("The app wants to access your camera")
                                 .setMessage(mnsg)
                                 .setCancelable(false)
-                                .setPositiveButton("Allow", new DialogInterface.OnClickListener()
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
                                 {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which)
@@ -394,7 +397,7 @@ public class MyTukxis extends AppCompatActivity {
                                         }
                                     }
                                 })
-                                .setNegativeButton("Skip", new DialogInterface.OnClickListener() {
+                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i)
                                     {
@@ -520,6 +523,7 @@ public class MyTukxis extends AppCompatActivity {
     {
         Intent intentCarregar=new Intent(MyTukxis.this,BeingCharging.class);
         intentCarregar.putExtra("opcaoCarregamento",1); //Para indicar que é para inicar carregamento
+        //intentCarregar.putExtra("iniciarTerminar",1);
         startActivity(intentCarregar);
     }
 
@@ -527,6 +531,7 @@ public class MyTukxis extends AppCompatActivity {
     {
         Intent intentCarregar=new Intent(MyTukxis.this,BeingCharging.class);
         intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
+        //intentCarregar.putExtra("iniciarTerminar",1);
         startActivity(intentCarregar);
     }
 

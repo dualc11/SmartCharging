@@ -24,7 +24,19 @@ tools:context=".MapsActivity">
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        tools:context="com.example.luis.smartcharging.MapsActivity" />
+        tools:context="com.example.luis.smartcharging.MapsActivity">
+
+        <Button
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="End the tour"
+            android:background="#ffb300"
+            android:layout_gravity="bottom|right"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:onClick="terminarViagem"/>
+
+        </fragment>
 
     <ListView
         android:id="@+id/listaMyTrip"

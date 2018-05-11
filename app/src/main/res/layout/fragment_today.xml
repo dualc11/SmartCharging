@@ -37,7 +37,7 @@
             android:layout_height="match_parent"
             android:text="Upload my day"
             android:layout_gravity="bottom|end"
-            android:background="#FFD700"/>
+            android:background="#ffb300"/>
 
     </LinearLayout>
 
