@@ -24,14 +24,18 @@ import java.util.List;
 
 public class FragmentToday extends Fragment {
 
-    private static TableLayout tableLayout;
+    private ListView listRegister;
+    private RegisterListAdapter listAdapter;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_today, container, false);
-        tableLayout=v.findViewById(R.id.tableLayout);
-        DBManager.getRegister(this.getContext(),1,true);
+        listRegister=v.findViewById(R.id.registerList);
+
+        listAdapter = new RegisterListAdapter(this.getContext(), R.layout.register_info, DBManager.getRegister(1));
+        listRegister.setAdapter(listAdapter);
+
         Button button = (Button) v.findViewById(R.id.bUploadKms);
         button.setOnClickListener(new View.OnClickListener()
         {
@@ -59,10 +63,5 @@ public class FragmentToday extends Fragment {
         {
             Toast.makeText(getContext(),"Termine primeiro a viagem",Toast.LENGTH_LONG).show();
         }
-    }
-
-    public static TableLayout getTableLayout()
-    {
-        return tableLayout;
     }
 }

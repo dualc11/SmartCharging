@@ -25,6 +25,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,7 +35,7 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
     private Toolbar toolbar;
     private ListView listaMyTrip;
-    private String [] myTripInfo;
+    private ArrayList<String> myTripInfo;
     private ArrayAdapter<String> listaAdapter;
 
     private Timer timer;    //Timer
@@ -60,7 +61,7 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         navigationClick(toolbar);
 
         listaMyTrip=findViewById(R.id.listaMyTrip);
-        myTripInfo =new String [2];
+        myTripInfo =new ArrayList<String>();
         preencheListaMyTrip();
         i=0;
         mapaPreenchido=false;
@@ -145,12 +146,15 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
     public void preencheListaMyTrip()
     {
-        myTripInfo[0]="Distance travelled during the tour               15Km"
-                +"\n"+"This value is an estimation based on real time data about your location";
-        myTripInfo[1]="Battery autonomy          25Km"+"\n"
-                +"This value is an estimation based on real time data about your location";
+        myTripInfo.add("Distance travelled during the tour"+
+                ","+"This value is an estimation based on real time data about your location"+","+
+                " 15Km");
 
-        listaAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,myTripInfo);
+        myTripInfo.add("Battery autonomy"+","
+                +"This value is an estimation based on real time data about your location"+","+
+                "25Km");
+
+        listaAdapter=new currentTourListAdapter(this,R.layout.current_tour,myTripInfo);
         listaMyTrip.setAdapter(listaAdapter);
     }
 

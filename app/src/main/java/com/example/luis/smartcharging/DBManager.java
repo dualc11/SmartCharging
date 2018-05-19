@@ -501,85 +501,48 @@ public class DBManager {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static synchronized void getRegister(Context context,int nDias,boolean justToday)
+    public static synchronized ArrayList<RegisterInfo> getRegister(int nDias)
     {
+        ArrayList<RegisterInfo> registerInfo=new ArrayList<RegisterInfo>();
         Cursor c;
-        int i = 0;
-        boolean temRegisto=false;
-        preencheLinha("Nr Carro", "Nr Viagem", "Km", context, i, 3,justToday);
-        for(int nrDias=0;nrDias<nDias;nrDias++)
-        {
-            String dataViagem=convertData(nrDias);
-            if(!justToday)
-            {
-                i++;
-                preencheLinha("",dataViagem,"",context,i,1,justToday);
-            }
+        boolean temRegistos;
+        RegisterInfo register=new RegisterInfo("Nr Carro","Nr Viagem","Km");
+        registerInfo.add(register);
+
+        for(int nrDias=0;nrDias<nDias;nrDias++) {
+            String dataViagem = convertData(nrDias);
+            temRegistos=false;
+            register=new RegisterInfo("",dataViagem,"");
+            registerInfo.add(register);
 
             c = db.rawQuery("SELECT " + VIAGEMID + "," + DISTANCIAKM + "," + CARROID +
                     " FROM " + TABLE_VIAGEM_INFO + " WHERE " + DATA + "='" + dataViagem + "'", null);
             double kmsTotais = 0;
 
-            while (c.moveToNext()) {
-                temRegisto=true;
-                i++;
+            while (c.moveToNext())
+            {
                 kmsTotais += c.getDouble(1);
                 String viagemId = Integer.toString(c.getInt(0));
                 String distancia = Double.toString(c.getDouble(1));
                 String carroId = Integer.toString(c.getInt(2));
-                preencheLinha(carroId, viagemId, distancia, context, i, 3,justToday);
-            }
-            if (!temRegisto) {
-                i++;
-                preencheLinha("", "Não tem nenhum registo de viagens diárias", "", context, i, 1,justToday);
-            }
-            i++;
-            preencheLinha("", "", "", context, i, 1,justToday);
-            i++;
-            preencheLinha("", "Total Km diários: "+kmsTotais, "", context, i, 1,justToday);
-            i++;
-            preencheLinha("", "", "", context, i, 1,justToday);
-            temRegisto=false;
-        }
-    }
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static void preencheLinha(String atr1, String atr2, String atr3, Context context,int i,int nrAtr,boolean justToday)
-    {
-        TableLayout tableLayout;
-        if(justToday) {
-            tableLayout = FragmentToday.getTableLayout();
-        }
-        else
-        {
-            tableLayout=FragmentHistory.getTableLayout();
-        }
-        TableRow row= new TableRow(context);
-        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT);
-        row.setLayoutParams(lp);
-        TextView tv;
-        //Para calcular o total Km diários ou outros avisos
-        if(nrAtr==1)
-        {
-            tv= new TextView(context);
-            //tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            tv.setText(atr2);
-            row.addView(tv);
-            tableLayout.addView(row,i);
-            return;
-        }
 
-        for(int indice=0;indice<nrAtr;indice++) {
-            tv= new TextView(context);
-            tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            switch (indice)
-            {
-                case 0:tv.setText(atr1);break;
-                case 1:tv.setText(atr2);break;
-                case 2:tv.setText(atr3);break;
+                register=new RegisterInfo(carroId,viagemId,distancia);
+                registerInfo.add(register);
+                temRegistos=true;
             }
-            row.addView(tv);
+            if(!temRegistos)
+            {
+                register=new RegisterInfo("","Sem registos","");
+                registerInfo.add(register);
+            }
+            register=new RegisterInfo("Kms totais diários: "+kmsTotais,"","");
+            registerInfo.add(register);
+            if(nDias-nrDias>1) {
+                register = new RegisterInfo("", "", "");
+                registerInfo.add(register);
+            }
         }
-        tableLayout.addView(row,i);
+        return registerInfo;
     }
 
     public static String convertData(int i)

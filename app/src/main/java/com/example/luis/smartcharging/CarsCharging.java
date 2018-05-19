@@ -15,7 +15,6 @@ import java.util.Arrays;
 public class CarsCharging extends MyTukxis {
 
     private Toolbar toolbar;
-    private ArrayList<DadosCharging> listaTucsCarregamento=new ArrayList<DadosCharging>();
     private ListView listaTucsAcarregar;
     private ChargingListAdapter listAdapter;
 
@@ -35,15 +34,6 @@ public class CarsCharging extends MyTukxis {
 
     public void preencheListaCarregamento()
     {
-       /*DadosCharging dados1=new DadosCharging("16.40","1","3","5:00",5);
-       DadosCharging dados2=new DadosCharging("18:00","3","5","8:00",9);
-
-       listaTucsCarregamento.add(dados1);
-       listaTucsCarregamento.add(dados2);*/
-
-       /*listAdapter=new ChargingListAdapter(this,R.layout.charging_item,listaTucsCarregamento);
-       listaTucsAcarregar.setAdapter(listAdapter);*/
-
        if(DBManager.tucsEmCarregamento()!=null) {
            listAdapter = new ChargingListAdapter(this, R.layout.charging_item, DBManager.tucsEmCarregamento());
            listaTucsAcarregar.setAdapter(listAdapter);

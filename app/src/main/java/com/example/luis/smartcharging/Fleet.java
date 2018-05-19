@@ -6,11 +6,14 @@ import android.support.v7.widget.Toolbar;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Fleet extends MyTukxis {
-    private static ListView listaTucsDisp;
+    private static ListView listaFleet;
     private Toolbar toolbar;
+    private ArrayList<DadosFleet> fleets=new ArrayList<>();
+    private FleetListAdapter fleetAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,43 +21,26 @@ public class Fleet extends MyTukxis {
         setContentView(R.layout.activity_fleet);
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-        //toolbar.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.menuicon));
         getSupportActionBar().setTitle("Fleet");
 
         navigationClick(toolbar);
-        listaTucsDisp=findViewById(R.id.listaTucsDisp);
-        geraTucsDisp();
+        listaFleet=findViewById(R.id.listaTucsDisp);
+        preencheFleet();
 
     }
 
-    public void geraTucsDisp()
+    public void preencheFleet()
     {
-        Random rand= new Random();
-        int idTucDisp;
-        ArrayAdapter <String> adapter;
-        boolean jaExiste;
-        int nrTucsDisp=rand.nextInt(7);
-        String [] tucsDisp= new String[nrTucsDisp];
-        int i=0;
-        while(i<tucsDisp.length)
-        {
-            idTucDisp = rand.nextInt(6) + 1;//Gera nr de 1 a 6
-            jaExiste=false;
-            for(int indice=0;indice<tucsDisp.length;indice++)
-            {
-                if(tucsDisp[indice]!=null) {
-                    if (tucsDisp[indice].equals("Tuc Id: " + idTucDisp)) {
-                        jaExiste = true;
-                    }
-                }
-            }
-            if(!jaExiste)
-            {
-                tucsDisp[i] = "Car nº " + idTucDisp+"\n"+"(Available/Available(CarsCharging)/Not available)";
-                i++;
-            }
-        }
-        adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,tucsDisp);
-        listaTucsDisp.setAdapter(adapter);
+        DadosFleet dados=new DadosFleet("1","Available (charging)","1 bar at 13:30");
+        fleets.add(dados);
+        dados=new DadosFleet("2","Not available","");
+        fleets.add(dados);
+        dados=new DadosFleet("3","Available (charging)","2 bars at 16:30");
+        fleets.add(dados);
+        dados=new DadosFleet("4","Not available","");
+        fleets.add(dados);
+
+        fleetAdapter=new FleetListAdapter(this,R.layout.dados_fleet,fleets);
+        listaFleet.setAdapter(fleetAdapter);
     }
 }

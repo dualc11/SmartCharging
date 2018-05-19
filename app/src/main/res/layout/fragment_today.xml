@@ -5,23 +5,13 @@
     android:orientation="vertical"
     tools:context="com.example.luis.smartcharging.FragmentToday">
 
-    <ScrollView
+    <ListView
+        android:id="@+id/registerList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="10"
-        android:orientation="vertical">
+        android:layout_weight="10">
 
-        <TableLayout
-            android:id="@+id/tableLayout"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:stretchColumns="0,1,2">
-
-
-        </TableLayout>
-
-
-    </ScrollView>
+    </ListView>
 
     <LinearLayout
         android:layout_width="match_parent"
