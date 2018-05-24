@@ -1,13 +1,20 @@
 package com.example.luis.smartcharging;
 
 import android.content.Intent;
+import android.os.Build;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +49,14 @@ public class CarsCharging extends MyTukxis {
 
     public void terminarCarregar(View v)
     {
-        Intent intentCarregar=new Intent(getApplicationContext(),BeingCharging.class);
-        intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
-        startActivity(intentCarregar);
+        if(!GpsService.getServicoIniciado()) {
+            Intent intentCarregar = new Intent(getApplicationContext(), BeingCharging.class);
+            intentCarregar.putExtra("opcaoCarregamento", 2); //Para indicar que é para terminar carregamento
+            startActivity(intentCarregar);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),"Termine primeiro a viagem atual!",Toast.LENGTH_SHORT).show();
+        }
     }
 }

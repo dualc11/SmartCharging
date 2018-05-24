@@ -523,10 +523,16 @@ public class MyTukxis extends AppCompatActivity {
     //Alterei aqui
     public void iniciarCarregamento()
     {
-        Intent intentCarregar=new Intent(MyTukxis.this,BeingCharging.class);
-        intentCarregar.putExtra("opcaoCarregamento",1); //Para indicar que é para inicar carregamento
-        //intentCarregar.putExtra("iniciarTerminar",1);
-        startActivity(intentCarregar);
+        if(!GpsService.getServicoIniciado()) {
+            Intent intentCarregar = new Intent(MyTukxis.this, BeingCharging.class);
+            intentCarregar.putExtra("opcaoCarregamento", 1); //Para indicar que é para inicar carregamento
+            //intentCarregar.putExtra("iniciarTerminar",1);
+            startActivity(intentCarregar);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),"Termine primeiro a viagem atual!",Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void terminarCarregar()

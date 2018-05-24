@@ -143,7 +143,7 @@ public class IntroduzirPerBat extends MyTukxis {
             {
                 Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
                 startActivity(intentPrincipal);
-                this.finish();
+                //this.finish();
             }
         }
         //Caso seja para terminar carregamento
@@ -167,7 +167,7 @@ public class IntroduzirPerBat extends MyTukxis {
             {
                 Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
                 startActivity(intentPrincipal);
-                this.finish();
+                //this.finish();
             }
         }
     }
