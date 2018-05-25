@@ -14,36 +14,36 @@
             android:id="@+id/pickUp"
             android:title="Pick up a car"
             android:orderInCategory="2"
-            android:icon="@drawable/um"/>
+            android:icon="@drawable/start"/>
         <item
             android:id="@+id/dropOff"
             android:title="Drop off a car"
             android:orderInCategory="3"
-            android:icon="@drawable/dois"/>
+            android:icon="@drawable/finish"/>
         <item
             android:id="@+id/myTrip"
             android:title="My Trip"
             android:orderInCategory="4"
-            android:icon="@drawable/tres"/>
+            android:icon="@drawable/map"/>
         <item
             android:id="@+id/carregar"
             android:title="Begin charge car"
             android:orderInCategory="5"
-            android:icon="@drawable/quatro"/>
+            android:icon="@drawable/plug"/>
         <item
             android:id="@+id/aCarregar"
             android:title="Cars charging"
             android:orderInCategory="6"
-            android:icon="@drawable/cinco"/>
+            android:icon="@drawable/charging"/>
         <item
             android:id="@+id/tucsDisponiveis"
             android:title="Fleet"
             android:orderInCategory="7"
-            android:icon="@drawable/seis"/>
+            android:icon="@drawable/fleet"/>
         <item
             android:id="@+id/registoDiario"
             android:title="Register"
             android:orderInCategory="8"
-            android:icon="@drawable/sete"/>
+            android:icon="@drawable/history"/>
     </group>
 </menu>
