@@ -19,7 +19,6 @@ import org.json.JSONObject;
 
 public class BeingCharging extends MyTukxis {
 
-    private Button bQrCode;
     private IntentIntegrator qrScan;
     private static int resultadoCodigo;
     private static String stringCodigo;
