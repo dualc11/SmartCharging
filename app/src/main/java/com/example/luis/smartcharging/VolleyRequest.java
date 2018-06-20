@@ -6,6 +6,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -21,17 +22,26 @@ public class VolleyRequest {
     private static final RequestQueue queue=Volley.newRequestQueue(MyTukxis.getContext());
     private static final String url="http://66.175.221.248:3000/test";
     //private static final String url="http://10.2.0.70:3000/teste";
+    //Para a conta
+    private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
+    private static final String urlActionPickDrop="";
 
     public static void getRequest()
     {
         // prepare the Request
-        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>()
+        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>()
                 {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(JSONArray response) {
                         // display response
                         Log.i("Response", response.toString());
+                        //JSONObject jsonObject = response.getJSONObject(i);
+                        //jsonObject.getString("title");
+                        //OU
+                        //response.getString("title");
+
+                        //username e password
                     }
                 },
                 new Response.ErrorListener()
@@ -77,7 +87,8 @@ public class VolleyRequest {
                 params.put("batFinal",batFinal);
                 params.put("kmsViagem",kmsViagem);
                 params.put("coordenadas",jsonArray.toString());
-
+                //plug, a null quando não for para pôr a carregar
+                //time
                 return params;
             }
         };
