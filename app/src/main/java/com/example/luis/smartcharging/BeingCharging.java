@@ -26,7 +26,10 @@ public class BeingCharging extends MyTukxis {
     private static int tucId,tomadaId;
     private Toolbar toolbar;
     private String title;
-
+    private static final int disconect = 2;
+    private static final int connect = 1;
+    private static final int codigoTomda = 0;
+    private static final int codigoTuc = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,12 +41,12 @@ public class BeingCharging extends MyTukxis {
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         getSupportActionBar().setTitle("Being charging");
         navigationClick(toolbar);
-
-        if(getIntent().getIntExtra("opcaoCarregamento",0)==2)
+        int opcaoCarregamento = getIntent().getIntExtra("opcaoCarregamento",0);
+        if(opcaoCarregamento == disconect)
         {
             title="You disconect";
         }
-        else if(getIntent().getIntExtra("opcaoCarregamento",0)==1)
+        else if(opcaoCarregamento == connect)
         {
             title="You connect";
         }
@@ -72,20 +75,27 @@ public class BeingCharging extends MyTukxis {
                     //converting the data to json
                     JSONObject obj = new JSONObject(result.getContents());
                     //Guarda o valor que é lido do QrCode
-                    resultadoCodigo=Integer.parseInt(obj.getString(stringCodigo));
+                    resultadoCodigo=Integer.parseInt(obj.getString(stringCodigo));//Fazer método para verificar se existe carro com qrcode
                     Toast.makeText(this,stringCodigo+": "+resultadoCodigo,Toast.LENGTH_LONG).show();
                     //Caso seja o Tuc-Tuc para identificar
-                    if(codigo==0)
+                    if(codigo == codigoTomda)
                     {
                         tomadaId=resultadoCodigo;
+
                         confirmacao("plug",tomadaId);
+
                     }
                     //Caso seja a tomada para identificar
-                    else if(codigo==1)
+                    else if(codigo == codigoTuc)
                     {
-                        tucId=resultadoCodigo;
-                        MyTukxis.setTucId(tucId);//Mudei aqui
-                        confirmacao("car",tucId);
+                        if(DBManager.existeCarro(tucId)) {
+                            tucId = resultadoCodigo;
+                            MyTukxis.setTucId(tucId);//Mudei aqui
+                            confirmacao("car", tucId);
+                        } else{
+                            Toast toast = Toast.makeText(getContext(), "Não existe Tuc com esse id", Toast.LENGTH_LONG);
+                            toast.show();
+                        }
                     }
                 }
                 catch (JSONException e)
@@ -206,4 +216,6 @@ public class BeingCharging extends MyTukxis {
 
     //public static int getTucId(){return tucId;}
     public static int getTomadaId(){return tomadaId;}
+
+
 }

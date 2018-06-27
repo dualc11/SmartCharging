@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -16,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
@@ -26,12 +30,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
+
+import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 
 public class MyTukxis extends AppCompatActivity {
 
@@ -46,6 +58,7 @@ public class MyTukxis extends AppCompatActivity {
     private static Context context;
     private DrawerLayout dLayout;
     private Toolbar toolbar;
+    private static  ImageView imageView = null;
 
 
     @Override
@@ -86,6 +99,7 @@ public class MyTukxis extends AppCompatActivity {
         }
 
         context=getApplicationContext();
+        VolleyRequest.loadCarros();
     }
 
     //Método para saber quando o utilizador carregou na toolbar
@@ -106,8 +120,11 @@ public class MyTukxis extends AppCompatActivity {
         dLayout = (DrawerLayout) findViewById(R.id.drawer_layout); // initiate a DrawerLayout
         NavigationView navView = (NavigationView) findViewById(R.id.navigation); // initiate a Navigation View
         Menu menu = navView.getMenu();
-        menu.add(getUserId());
-        menu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.drawable.accounticon));
+        menu.getItem(0).setTitle(getUserId());
+
+
+
+
         // implement setNavigationItemSelectedListener event on NavigationView
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -369,7 +386,7 @@ public class MyTukxis extends AppCompatActivity {
     {
         runOnUiThread(()->
                 {
-                    if (!isFinishing())
+                    if (!isFinishing())//Enquanto a atviidade ainda está em progresso
                     {
                         new AlertDialog.Builder(MyTukxis.this)
                                 .setTitle("The app wants to access your camera")
@@ -560,4 +577,6 @@ public class MyTukxis extends AppCompatActivity {
     public static Intent getIntentGps(){return intent;}
 
     public static void setTucId(int tucId){idCarro=tucId;}//Mudei aqui
+
+
 }

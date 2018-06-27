@@ -83,6 +83,11 @@ public class DBManager {
             +HORAFIM+" STRING, "+TUCID+" INTEGER, "+TOMADAID+" INTEGER, "+USERID+" STRING, "+
             BATERIAINICIAL+" INTEGER, "+BATERIAFINAL+" INTEGER"+")";
 
+    private static final String TABELA_CARROS = "carros";
+    private static final String ID_CARRO = "id";
+    private static final String NUMERO_CARRO = "numeroCarro";
+    private static final String CREATE_TABLE_CARROS ="CREATE TABLE "+TABELA_CARROS+
+            "("+ID_CARRO+" INTEGER PRIMARY KEY , "+NUMERO_CARRO+")";
     private static SQLiteDatabase db;
     private static JSONObject jsonObj;
     private static JSONArray jsonArray;
@@ -149,6 +154,7 @@ public class DBManager {
         db.execSQL(CREATE_TABLE_VIAGEM_INFO);
         db.execSQL(CREATE_TABLE_REGISTO);
         db.execSQL(CRATE_TABLE_CARREGAMENTO);
+        db.execSQL(CREATE_TABLE_CARROS);
     }
 
     public synchronized boolean insertData(double longitude, double latitude,double altitude, String dataEhora,int viagemId)
@@ -616,4 +622,25 @@ public class DBManager {
 
     public static JSONArray getJsonArray(){return jsonArray;}
     public static Marker getMarker(){return marker;}
+
+    public static void inserirCarro (int id, int numeroCarro){
+        String query = "INSERT INTO "+TABELA_CARROS+"("+ID_CARRO+","+NUMERO_CARRO+")" +
+                "SELECT "+id+","+numeroCarro+
+                " WHERE NOT EXISTS(SELECT 1 FROM "+TABELA_CARROS+"" +
+                " WHERE "+TABELA_CARROS+"."+ID_CARRO+"="+id+")";
+        db.execSQL(query);
+    }
+    public static boolean existeCarro(int id){
+        String[] col = new String[]{CARROID};
+        String[] where = new String[]{CARROID+"=="+CARROID};
+        Cursor cursor = db.query(TABELA_CARROS, col, CARROID+"= '" + id + "'",
+                null, null, null, null);
+
+       int size = cursor.getCount();
+        cursor.close();
+        if (size > 0) {
+            return true;
+        }
+        return false;
+    }
 }

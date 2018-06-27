@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -16,6 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="15dp"/>
     </LinearLayout>
 
@@ -31,12 +33,15 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="3"
-            />
+            android:textColor="@color/black"
+            tools:ignore="Suspicious0dp" />
         <TextView
             android:id="@+id/bars"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textColor="@color/black"
+            />
     </LinearLayout>
 
 </LinearLayout>

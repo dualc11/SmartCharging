@@ -13,6 +13,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.android.volley.VolleyError;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -39,16 +46,43 @@ public class Fleet extends MyTukxis {
 
     public void preencheFleet()
     {
-        DadosFleet dados=new DadosFleet("1","Available (charging)","1 bar at 13:30");
-        fleets.add(dados);
-        dados=new DadosFleet("2","Not available","");
-        fleets.add(dados);
-        dados=new DadosFleet("3","Available (charging)","2 bars at 16:30");
-        fleets.add(dados);
-        dados=new DadosFleet("4","Not available","");
-        fleets.add(dados);
+        fleets = VolleyRequest.getCarsStatus(new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONArray result) {
+                //Informação dos dados do carro
+                String idTuc;
+                int available = -1;
+                int charging = -1;
+                String bars = "70";
+                DadosFleet dadosCarro;
 
-        fleetAdapter=new FleetListAdapter(this,R.layout.dados_fleet,fleets);
-        listaFleet.setAdapter(fleetAdapter);
+                for (int i = 0;i<result.length();i++) {
+                    try {
+                        JSONObject carro = result.getJSONObject(i);
+                        idTuc = carro.getString("id");
+                        if(carro.getString("available").compareTo("null") != 0)
+                            available = carro.getInt("available");
+                        if(carro.getString("charging").compareTo("null") != 0)
+                            charging = carro.getInt("charging");
+                        dadosCarro = new DadosFleet(idTuc,available,charging,bars);
+                        fleets.add(dadosCarro);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                fleetAdapter = new FleetListAdapter(getContext(),R.layout.dados_fleet,fleets);
+                listaFleet.setAdapter(fleetAdapter);
+            }
+
+            @Override
+            public void onFail(VolleyError error) {
+                Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar o feed", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+
+
     }
 }

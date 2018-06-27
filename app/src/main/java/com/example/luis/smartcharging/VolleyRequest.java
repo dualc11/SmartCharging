@@ -1,6 +1,7 @@
 package com.example.luis.smartcharging;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -12,19 +13,24 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.example.luis.smartcharging.MyTukxis.getContext;
+
 public class VolleyRequest {
 
-    private static final RequestQueue queue=Volley.newRequestQueue(MyTukxis.getContext());
-    private static final String url="http://66.175.221.248:3000/test";
+    private static final RequestQueue queue=Volley.newRequestQueue(getContext());
+    private static final String url="http://66.175.221.248:300 0/test";
     //private static final String url="http://10.2.0.70:3000/teste";
     //Para a conta
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
     private static final String urlActionPickDrop="";
+    private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars";
 
     public static void getRequest()
     {
@@ -93,5 +99,51 @@ public class VolleyRequest {
             }
         };
         queue.add(postRequest);
+    }
+
+    public static ArrayList<DadosFleet> getCarsStatus(final VolleyCallback callback){
+        ArrayList<DadosFleet> listaDadosCarros = new ArrayList<>();
+        JsonArrayRequest postRequest = new JsonArrayRequest(urlCars,new Response.Listener<JSONArray>(){
+            @Override
+            public void onResponse(JSONArray response) {
+                callback.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                callback.onFail(error);
+            }
+        });
+        queue.add(postRequest);
+        return listaDadosCarros;
+    }
+    public static void loadCarros(){
+
+        JsonArrayRequest postRequest = new JsonArrayRequest(URL_CARROS,new Response.Listener<JSONArray>(){
+            @Override
+            public void onResponse(JSONArray response) {
+                int id;
+                int numero;
+              for (int i=0;i<response.length();i++){
+                  try {
+                      JSONObject carro = response.getJSONObject(i);
+                      id = carro.getInt("id");
+                      numero = carro.getInt("number");
+                      DBManager.inserirCarro(id,numero);
+                  } catch (JSONException e) {
+                      e.printStackTrace();
+                  }
+
+              }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar os carros", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+        queue.add(postRequest);
+
     }
 }

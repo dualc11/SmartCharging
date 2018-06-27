@@ -34,12 +34,30 @@ public class FleetListAdapter extends ArrayAdapter<DadosFleet> {
         TextView estado=(TextView) convertView.findViewById(R.id.estado);
         TextView bars=(TextView) convertView.findViewById(R.id.bars);
 
-        DadosFleet dados=getItem(position);
+        DadosFleet dados = getItem(position);
 
         carId.setText("Car nº "+dados.getIdTuc());
-        estado.setText(dados.getEstado());
+        estado.setText(escolheEstado(dados));
         bars.setText(dados.getBars());
 
         return convertView;
     }
+    public String escolheEstado(DadosFleet dadosCarro){
+        String estado = "-";//Caso ocorrer algum erro
+        if(dadosCarro.getAvailable()==1){
+            if(dadosCarro.getCharging()==1){
+                estado = "Availabe(Charging)";
+            }else{
+                estado = "Availabe(Not charging)";
+            }
+        }else{//Not availabe
+            if(dadosCarro.getCharging()==1){
+                estado = "Not availabe(Charging)";
+            }else {
+                estado = "Not availabe(Not charging)";
+            }
+        }
+        return estado;
+    }
+
 }
