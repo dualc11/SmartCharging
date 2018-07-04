@@ -1,5 +1,6 @@
 package com.example.luis.smartcharging;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -100,6 +101,7 @@ public class MyTukxis extends AppCompatActivity {
 
         context=getApplicationContext();
         VolleyRequest.loadCarros();
+        VolleyRequest.postViagem(23);
     }
 
     //Método para saber quando o utilizador carregou na toolbar
@@ -324,11 +326,14 @@ public class MyTukxis extends AppCompatActivity {
 
     public void pedePermissoes()
     {
-        ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION,
+        ActivityCompat.requestPermissions(this,new String[]{
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.INTERNET,
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 android.Manifest.permission.CAMERA,
+                android.Manifest.permission.ACCESS_WIFI_STATE,
+                android.Manifest.permission.ACCESS_NETWORK_STATE,
                 android.Manifest.permission.READ_PHONE_STATE},PERMISSOES);
     }
 

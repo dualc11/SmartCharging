@@ -88,8 +88,8 @@ public class BeingCharging extends MyTukxis {
                     //Caso seja a tomada para identificar
                     else if(codigo == codigoTuc)
                     {
+                        tucId = resultadoCodigo;
                         if(DBManager.existeCarro(tucId)) {
-                            tucId = resultadoCodigo;
                             MyTukxis.setTucId(tucId);//Mudei aqui
                             confirmacao("car", tucId);
                         } else{

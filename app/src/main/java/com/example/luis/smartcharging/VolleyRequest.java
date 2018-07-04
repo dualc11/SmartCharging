@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ import static com.example.luis.smartcharging.MyTukxis.getContext;
 public class VolleyRequest {
 
     private static final RequestQueue queue=Volley.newRequestQueue(getContext());
-    private static final String url="http://66.175.221.248:300 0/test";
+        private static final String url="http://66.175.221.248:300/test";
     //private static final String url="http://10.2.0.70:3000/teste";
     //Para a conta
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
@@ -101,6 +102,8 @@ public class VolleyRequest {
         queue.add(postRequest);
     }
 
+
+
     public static ArrayList<DadosFleet> getCarsStatus(final VolleyCallback callback){
         ArrayList<DadosFleet> listaDadosCarros = new ArrayList<>();
         JsonArrayRequest postRequest = new JsonArrayRequest(urlCars,new Response.Listener<JSONArray>(){
@@ -146,4 +149,56 @@ public class VolleyRequest {
         queue.add(postRequest);
 
     }
+  public static void postViagem (int idViagem){
+     StringRequest postRequest = new StringRequest(Request.Method.POST, "http://10.2.220.99:3000",
+              new Response.Listener<String>()
+              {
+                  @Override
+                  public void onResponse(String response) {
+                      // response
+                      Log.d("Response", response);
+                  }
+              },
+              new Response.ErrorListener()
+              {
+                  @Override
+                  public void onErrorResponse(VolleyError error) {
+                      // error
+                      Log.d("Error.Response", error.toString());
+                  }
+              }
+      ) {
+          @Override
+          protected Map<String, String> getParams()
+          {
+              ArrayList<GPSLogger> listaGPSLogger = DBManager.getGPSLogger(idViagem);
+              Map<String, String>  params = new HashMap<String, String>();
+             String res = "";
+             JSONArray jsonArray = new JSONArray();
+              for (int i = 0;i<listaGPSLogger.size();i++){
+                  JSONObject jsonObject = new JSONObject();
+                  try {
+                      jsonObject.put("id", Integer.toString(listaGPSLogger.get(i).getId()));
+                      jsonObject.put("longitude", Float.toString(listaGPSLogger.get(i).getLongitude()));
+                      jsonObject.put("latitude",Float.toString(listaGPSLogger.get(i).getAltitude()));
+                      jsonObject.put("data", listaGPSLogger.get(i).getData().toString());
+                      jsonObject.put("viagemId",Integer.toString(listaGPSLogger.get(i).getViagemId()));
+
+                      jsonArray.put(i,jsonObject);
+                  } catch (JSONException e) {
+                      e.printStackTrace();
+                  }
+
+              }
+                params.put("dados",jsonArray.toString());
+              return params;
+          }
+
+         @Override
+         protected String getParamsEncoding() {
+             return super.getParamsEncoding();
+         }
+     };
+      queue.add(postRequest);
+  }
 }

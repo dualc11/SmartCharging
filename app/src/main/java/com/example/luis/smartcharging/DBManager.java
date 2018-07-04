@@ -28,9 +28,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 public class DBManager {
 
@@ -631,9 +634,9 @@ public class DBManager {
         db.execSQL(query);
     }
     public static boolean existeCarro(int id){
-        String[] col = new String[]{CARROID};
-        String[] where = new String[]{CARROID+"=="+CARROID};
-        Cursor cursor = db.query(TABELA_CARROS, col, CARROID+"= '" + id + "'",
+        String[] col = new String[]{ID_CARRO};
+        String[] where = new String[]{ID_CARRO+"=="+ID_CARRO};
+        Cursor cursor = db.query(TABELA_CARROS, col, ID_CARRO+"= '" + id + "'",
                 null, null, null, null);
 
        int size = cursor.getCount();
@@ -642,5 +645,31 @@ public class DBManager {
             return true;
         }
         return false;
+    }
+    public static ArrayList<GPSLogger> getGPSLogger(int viagemId){
+        ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
+
+
+        String [] Select ={ID,LONGITUDE,ALTITUDE,DATAEHORA,VIAGEMID};
+        String From = TABLE_GPS_LOGGER;
+        String   Where =ID+"=="+ID+" AND "+VIAGEMID+" == "+viagemId;
+        Cursor clistaGpsLogger = db.query(From,Select,Where,null,null,null,null);
+        while (clistaGpsLogger.moveToNext()){
+            GPSLogger gpsLogger = new GPSLogger();
+            gpsLogger.setId(clistaGpsLogger.getInt(0));
+            gpsLogger.setLongitude(clistaGpsLogger.getFloat(1));
+            gpsLogger.setAltitude(clistaGpsLogger.getFloat(2));
+            String stringData = clistaGpsLogger.getString(3);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            try {
+                Date date = format.parse(stringData);
+                gpsLogger.setData(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            gpsLogger.setViagemId(clistaGpsLogger.getInt(4));
+            listaGpsLoggers.add(gpsLogger);
+        }
+        return  listaGpsLoggers;
     }
 }
