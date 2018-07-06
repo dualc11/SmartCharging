@@ -81,8 +81,11 @@ public class BeingCharging extends MyTukxis {
                     if(codigo == codigoTomda)
                     {
                         tomadaId=resultadoCodigo;
-
-                        confirmacao("plug",tomadaId);
+                        if(DBManager.existePulg(tomadaId)){
+                            confirmacao("plug",tomadaId);
+                        }else{
+                            Toast.makeText(this,"Não existe tomada com esse ID",Toast.LENGTH_LONG).show();
+                        }
 
                     }
                     //Caso seja a tomada para identificar

@@ -35,16 +35,20 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.android.volley.VolleyError;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
+import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
 
 public class MyTukxis extends AppCompatActivity {
 
@@ -90,7 +94,9 @@ public class MyTukxis extends AppCompatActivity {
         } else {
             Log.i("sdf", "Database já existe");
         }
+        context = getApplicationContext();
         db = DBManager.getDBManager();
+        VolleyRequest.getToken("claudiosardinha1997@gmail.com","12345");
 
         //intializing scan object
         qrScan = new IntentIntegrator(this);
@@ -99,9 +105,10 @@ public class MyTukxis extends AppCompatActivity {
             registoUserId();
         }
 
-        context=getApplicationContext();
+
         VolleyRequest.loadCarros();
-        VolleyRequest.postViagem(23);
+
+
     }
 
     //Método para saber quando o utilizador carregou na toolbar
@@ -295,7 +302,12 @@ public class MyTukxis extends AppCompatActivity {
                     JSONObject obj = new JSONObject(result.getContents());
                     idCarro = Integer.parseInt(obj.getString("IdCarro"));
                     if(!GpsService.getServicoIniciado()) {
-                        confirmacaoIdTuc("You picked up" + " car", idCarro);
+                        if(DBManager.existeCarro(idCarro)){//Verifica se existe um carro com esse id
+                            confirmacaoIdTuc("You picked up" + " car", idCarro);
+                        }else{
+                                Toast.makeText(getApplicationContext(),"Não existe carro com esse Id",Toast.LENGTH_LONG).show();
+
+                        }
                     }
                     else
                     {
@@ -305,6 +317,7 @@ public class MyTukxis extends AppCompatActivity {
                 catch (JSONException e)
                 {
                     e.printStackTrace();
+
                     Toast.makeText(getApplicationContext(), result.getContents(), Toast.LENGTH_LONG).show();
                 }
             }
@@ -450,15 +463,24 @@ public class MyTukxis extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog, int which)
                                     {
                                         Intent intent=new Intent(getApplicationContext(),IntroduzirPerBat.class);
-                                        if(!GpsService.getServicoIniciado()) {
-                                            intent.putExtra("opcao", 0);
+                                        boolean existeCarro = DBManager.existeCarro(idCarro);
+                                        if(existeCarro){
+                                            if(!GpsService.getServicoIniciado()) {
+                                                intent.putExtra("opcao", 0);
+                                            }
+                                            else
+                                            {
+                                                intent.putExtra("opcao",1);
+                                            }
+                                            intent.putExtra("idCarro",idCarro);
+                                            startActivity(intent);
                                         }
                                         else
                                         {
-                                            intent.putExtra("opcao",1);
+                                            Log.e("Existe Carro","Id carro não existe");
+                                            Toast.makeText(getContext(),"Não existe esse carro com esse Id",Toast.LENGTH_LONG);
                                         }
-                                        intent.putExtra("idCarro",idCarro);
-                                        startActivity(intent);
+
                                     }
                                 })
                                 .setNegativeButton("No", new DialogInterface.OnClickListener() {

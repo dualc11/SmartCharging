@@ -170,6 +170,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
             String kmsViagem = Double.toString(kmViagem);
 
             VolleyRequest.postRequest(idCarro, idDriver, batInicial, batFinal, kmsViagem, DBManager.getJsonArray());
+
         } else //Caso a viagem não tenha registado nenhuma coordenada apagamos o registo da outra tabela
         // ViagemInfo pois não faz sentido ter
         {

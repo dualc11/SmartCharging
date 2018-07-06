@@ -85,12 +85,25 @@ public class DBManager {
             "("+IDCARREGAMENTO+" INTEGER PRIMARY KEY AUTOINCREMENT, "+HORAINICIO+" STRING, "
             +HORAFIM+" STRING, "+TUCID+" INTEGER, "+TOMADAID+" INTEGER, "+USERID+" STRING, "+
             BATERIAINICIAL+" INTEGER, "+BATERIAFINAL+" INTEGER"+")";
+    /**
+     * Tabela "Carros"
+     */
 
     private static final String TABELA_CARROS = "carros";
     private static final String ID_CARRO = "id";
     private static final String NUMERO_CARRO = "numeroCarro";
     private static final String CREATE_TABLE_CARROS ="CREATE TABLE "+TABELA_CARROS+
             "("+ID_CARRO+" INTEGER PRIMARY KEY , "+NUMERO_CARRO+")";
+    /**
+     * Tabela "Plug"
+     */
+
+    private static final String TABELA_PLUG = "plug";
+    private static final String ID_PLUG = "id";
+    private static final String NUMBER_PLUG = "number";
+    private static final String CREATE_TABLE_PLUG = "CREATE TABLE "+TABELA_PLUG+"" +
+            "("+ID_PLUG+" INTEGER PRIMARY KEY ,"+NUMBER_PLUG+" INTEGER)";
+
     private static SQLiteDatabase db;
     private static JSONObject jsonObj;
     private static JSONArray jsonArray;
@@ -158,6 +171,7 @@ public class DBManager {
         db.execSQL(CREATE_TABLE_REGISTO);
         db.execSQL(CRATE_TABLE_CARREGAMENTO);
         db.execSQL(CREATE_TABLE_CARROS);
+        db.execSQL(CREATE_TABLE_PLUG);
     }
 
     public synchronized boolean insertData(double longitude, double latitude,double altitude, String dataEhora,int viagemId)
@@ -645,6 +659,28 @@ public class DBManager {
             return true;
         }
         return false;
+    }
+
+    public static boolean existePulg(int id){
+        String[] col = new String[]{ID_PLUG};
+        String[] where = new String[]{ID_PLUG+"=="+ID_PLUG};
+        Cursor cursor = db.query(TABELA_PLUG, col, ID_PLUG+"= '" + id + "'",
+                null, null, null, null);
+
+        int size = cursor.getCount();
+        cursor.close();
+        if (size > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void inserirPlug (int id, int numeroPlug){
+        String query = "INSERT INTO "+TABELA_PLUG+"("+ID_PLUG+","+NUMBER_PLUG+")" +
+                "SELECT "+id+","+numeroPlug+
+                " WHERE NOT EXISTS(SELECT 1 FROM "+TABELA_PLUG+"" +
+                " WHERE "+TABELA_PLUG+"."+ID_PLUG+"="+id+")";
+        db.execSQL(query);
     }
     public static ArrayList<GPSLogger> getGPSLogger(int viagemId){
         ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();

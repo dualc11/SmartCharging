@@ -3,6 +3,7 @@ package com.example.luis.smartcharging;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -16,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,13 +28,24 @@ import static com.example.luis.smartcharging.MyTukxis.getContext;
 public class VolleyRequest {
 
     private static final RequestQueue queue=Volley.newRequestQueue(getContext());
-        private static final String url="http://66.175.221.248:300/test";
+    private static final String url="http://66.175.221.248:300/test";
     //private static final String url="http://10.2.0.70:3000/teste";
     //Para a conta
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
     private static final String urlActionPickDrop="";
     private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars";
+    private static String token = "";
+    private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token="+token;
+    private static boolean existToken = false;
 
+
+    /**
+ * VARIAVEIS SOBRE A PASSWORD
+ */
+
+   private static String username;
+    private static String password;
+    private static final String URL_LOGIN ="https://smile.prsma.com/tukxi/api/auth/token";
     public static void getRequest()
     {
         // prepare the Request
@@ -149,7 +162,41 @@ public class VolleyRequest {
         queue.add(postRequest);
 
     }
-  public static void postViagem (int idViagem){
+    public static void loadPlug(){
+        StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG,new Response.Listener<String>(){
+            @Override
+            public void onResponse(String responseString) {
+                try {
+                    JSONArray response =new JSONArray(responseString);
+                    for(int i = 0;i<response.length();i++){
+                            JSONObject plug = response.getJSONObject(i);
+                            DBManager.inserirPlug(plug.getInt("id"),plug.getInt("number"));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Log.e("coisa",URL_PLUG);
+                    String merda = new String(error.networkResponse.data,"utf-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar as tomadas", Toast.LENGTH_LONG);
+                toast.show();
+            }
+
+        }){
+
+
+        };
+        queue.add(postRequest);
+    }
+    public static void postViagem (int idViagem){
      StringRequest postRequest = new StringRequest(Request.Method.POST, "http://10.2.220.99:3000",
               new Response.Listener<String>()
               {
@@ -201,4 +248,62 @@ public class VolleyRequest {
      };
       queue.add(postRequest);
   }
+
+  public static void getToken(String username,String password){
+      if(!existToken){
+          StringRequest postRequest = new StringRequest(Request.Method.POST,URL_LOGIN,new Response.Listener<String>(){
+              @Override
+              public void onResponse(String responseString) {
+              }
+
+          }, new Response.ErrorListener() {
+              @Override
+              public void onErrorResponse(VolleyError error) {
+
+                  Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar realizar o Login", Toast.LENGTH_LONG);
+                  toast.show();
+              }
+
+          }){
+              @Override
+              protected Map<String, String> getParams() throws AuthFailureError {
+                  HashMap<String,String> params = new HashMap<>();
+                  params.put("username",username);
+                  params.put("password",password);
+                  return params;
+              }
+
+              @Override
+              protected void deliverResponse(String response) {
+                  try {
+                      JSONObject loginInfo = new JSONObject(response);
+                      VolleyRequest.setToken(loginInfo.getString("access_token"));
+                      VolleyRequest.setUrlPlug(VolleyRequest.getUrlPlug()+VolleyRequest.getToken());
+                  } catch (JSONException e) {
+                      e.printStackTrace();
+                  }
+
+              }
+
+          };
+          existToken =  true;
+          queue.add(postRequest);
+      }
+  }
+
+    public static String getToken() {
+        return token;
+    }
+
+    public static void setToken(String token) {
+        VolleyRequest.token = token;
+    }
+
+    public static String getUrlPlug() {
+        return URL_PLUG;
+    }
+
+    public static void setUrlPlug(String urlPlug) {
+        URL_PLUG = urlPlug;
+    }
 }
