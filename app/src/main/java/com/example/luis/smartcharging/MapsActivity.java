@@ -3,6 +3,7 @@ package com.example.luis.smartcharging;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -62,7 +63,11 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
         listaMyTrip=findViewById(R.id.listaMyTrip);
         myTripInfo =new ArrayList<String>();
-        preencheListaMyTrip();
+        Percurso percurso = null;
+        if(getIntent().hasExtra("percurso")){
+           percurso = (Percurso) getIntent().getParcelableExtra("percurso");
+        }
+        preencheListaMyTrip(percurso);
         i=0;
         mapaPreenchido=false;
         startTimer();
@@ -144,8 +149,13 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         };
     }
 
-    public void preencheListaMyTrip()
+    public void preencheListaMyTrip(Percurso percurso)
     {
+        if(percurso == null)
+            percurso = new Percurso(5,"-" ,"-",0f);
+        myTripInfo.add("Distination"+","
+                +percurso.getOrigem()+" - "+percurso.getDestino()+","+
+                "Back and forth around "+percurso.getDistancia());
         myTripInfo.add("Distance travelled during the tour"+
                 ","+"This value is an estimation based on real time data about your location"+","+
                 " 15Km");
@@ -154,7 +164,8 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
                 +"This value is an estimation based on real time data about your location"+","+
                 "25Km");
 
-        listaAdapter=new currentTourListAdapter(this,R.layout.current_tour,myTripInfo);
+
+        listaAdapter = new currentTourListAdapter(this,R.layout.current_tour,myTripInfo);
         listaMyTrip.setAdapter(listaAdapter);
     }
 

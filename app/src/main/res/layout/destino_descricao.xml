@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="1">
+
+    <LinearLayout
+        android:id="@+id/textLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.9"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@id/btn_seguinte"
+        android:orientation="vertical"
+        android:layout_marginLeft="10dp">
+
+        <TextView
+            android:id="@+id/destino"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:text="Destination"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/viagem"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:text="Funchal-Camara de lobos"
+            android:textSize="20dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/distancia"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:text="Back and forth around 30km" />
+
+    </LinearLayout>
+
+    <ImageButton
+
+        android:id="@+id/btn_seguinte"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:padding="10dp"
+        android:layout_alignParentRight="true"
+
+        android:gravity="center"
+        android:src="@mipmap/seta_direita"
+        tools:layout_editor_absoluteX="334dp"
+        tools:layout_editor_absoluteY="16dp" />
+    </RelativeLayout>

@@ -604,6 +604,11 @@ public class MyTukxis extends AppCompatActivity {
     public static Intent getIntentGps(){return intent;}
 
     public static void setTucId(int tucId){idCarro=tucId;}//Mudei aqui
-
+    public void setUpToolBar(String nameToolBar){//Responsável pela toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
+        setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
+        getSupportActionBar().setTitle("Tours menu");
+        navigationClick(toolbar);
+    }
 
 }

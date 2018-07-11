@@ -22,6 +22,8 @@ public class IntroduzirPerBat extends MyTukxis {
     private static Intent intentPrincipal;
     private static boolean foiParaWhatsapp;
     private Toolbar toolbar;
+    private static final int OPCAO_VIAGEM_DECORRER = 1;
+
 
     private View view;
 
@@ -31,7 +33,7 @@ public class IntroduzirPerBat extends MyTukxis {
         setContentView(R.layout.activity_seek_bar);
         view = LayoutInflater.from(IntroduzirPerBat.this).inflate(R.layout.seekbar,null);
         seekBarTouch();
-        intentPrincipal=new Intent(IntroduzirPerBat.this,MyTukxis.class);
+        intentPrincipal=new Intent(IntroduzirPerBat.this,MapsActivity.class);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
@@ -124,7 +126,7 @@ public class IntroduzirPerBat extends MyTukxis {
             iniciarViagem();
         }
         //Caso seja para terminar viagem
-        else if(getIntent().getIntExtra("opcao",0)==1)
+        else if(getIntent().getIntExtra("opcao",0)==OPCAO_VIAGEM_DECORRER)
         {
             terminarViagem();
         }

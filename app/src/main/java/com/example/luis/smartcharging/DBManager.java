@@ -108,6 +108,18 @@ public class DBManager {
     private static JSONObject jsonObj;
     private static JSONArray jsonArray;
     private static Marker marker;
+    /**
+     * TABELA DESTINOS
+     */
+    private static final String TABELA_PERCURSO = "percurso";
+    private static final String ID_PERCURSO  = "id";
+    private static final String ORIGEM_PERCURSO = "origem";
+    private static final String DESTINO_PERCURSO= "destino";
+    private static final String DISTANCIA_PERCURSO = "distnacia";
+    private static final String CREATE_TABLE_PERCURSO ="CREATE TABLE "+TABELA_PERCURSO+
+            "("+ID_PERCURSO+"INTEGER PRIMARY KEY,"+ORIGEM_PERCURSO+" STRING,"+DESTINO_PERCURSO+"STRING," +
+            DISTANCIA_PERCURSO +" DOUBLE)";
+
 
     public DBManager() {
 
@@ -172,6 +184,7 @@ public class DBManager {
         db.execSQL(CRATE_TABLE_CARREGAMENTO);
         db.execSQL(CREATE_TABLE_CARROS);
         db.execSQL(CREATE_TABLE_PLUG);
+        db.execSQL(CREATE_TABLE_PERCURSO);
     }
 
     public synchronized boolean insertData(double longitude, double latitude,double altitude, String dataEhora,int viagemId)
@@ -675,6 +688,28 @@ public class DBManager {
         return false;
     }
 
+    public static void inserirPercurso(int id,String origem,String destino,float distancia){
+        String query = "INSERT INTO "+TABELA_PERCURSO+"("+ID_PERCURSO+","+ORIGEM_PERCURSO+","+DESTINO_PERCURSO+","+DISTANCIA_PERCURSO+")" +
+                "SELECT "+id+","+origem+","+destino+","+distancia+
+                " WHERE NOT EXISTS(SELECT 1 FROM "+TABELA_PERCURSO+"" +
+                " WHERE "+TABELA_PERCURSO+"."+ID_PERCURSO+"="+id+")";
+        db.execSQL(query);
+    }
+    public static Percurso getPercurso(int id){
+        String[] col = new String[]{ID_PERCURSO,ORIGEM_PERCURSO,DESTINO_PERCURSO,DISTANCIA_PERCURSO};
+        String[] where = new String[]{ID_PERCURSO+"=="+ID_PERCURSO};
+        Cursor cursor = db.query(TABELA_PERCURSO, col, ID_PERCURSO+"= '" + id + "'",
+                null, null, null, null);
+        Percurso percurso = null;
+        while (cursor.moveToNext()){
+            int id_percurso = cursor.getInt(0);
+            String origem = cursor.getString(1);
+            String destino = cursor.getString(2);
+            float distancia = cursor.getFloat(3);
+            percurso = new Percurso(id_percurso,origem,destino,distancia);
+        }
+        return percurso;
+    }
     public static void inserirPlug (int id, int numeroPlug){
         String query = "INSERT INTO "+TABELA_PLUG+"("+ID_PLUG+","+NUMBER_PLUG+")" +
                 "SELECT "+id+","+numeroPlug+
