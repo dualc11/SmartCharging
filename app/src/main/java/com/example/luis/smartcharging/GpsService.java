@@ -58,6 +58,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     private static DBManager db;
     private static boolean servicoIniciado = false;
     private static int viagemId = 0;
+    private static int utilizacaoId = 0;
     private Timer timer;    //Timer
     private TimerTask timerTask;    //Ação que irá ser desempenhada de x em x tempo.
     private String data;
@@ -84,14 +85,16 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
 
         super.onCreate();
         db = MyTukxis.getDb();
-
-        viagemId = DBManager.getIdViagemAnterior();
-        viagemId++;
-        guardouAlgumaCoordenada = false;
-        //Mudei aqui
-        //bateriaInicial = rand.nextInt(11);
+        /**
+         * viagemId = DBManager.getIdViagemAnterior();
+         viagemId++;
+         db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, MyTukxis.getIdCarro());//Passar idCarro também
+         */
         bateriaInicial = IntroduzirPerBat.getPercentagemBat();
-        db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, MyTukxis.getIdCarro());//Passar idCarro também
+        utilizacaoId++;
+        db.insertUtilizaçãoIdBateriaInicialData(utilizacaoId,bateriaInicial,MyTukxis.getIdCarro());
+
+        guardouAlgumaCoordenada = false;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -153,14 +156,16 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
         {
             bateriaFinal = IntroduzirPerBat.getPercentagemBat();
             double kmViagem = 0;
+            double kmUtilizacao = 0;
 
             try {
-                kmViagem = DBManager.calculaKmViagem(viagemId);
+                //kmViagem = DBManager.calculaKmViagem(viagemId);
+                kmUtilizacao = DBManager.calculaKmUtilizacao(utilizacaoId);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
-            db.updateKmBateriaFinal(kmViagem, bateriaFinal, viagemId);
+            db.updateKmBateriaFinalUtilizacao(kmUtilizacao,bateriaFinal,utilizacaoId);
+            //db.updateKmBateriaFinal(kmViagem, bateriaFinal, viagemId);
 
             //Enviar dados da viagem para o servidor
             String idCarro = Integer.toString(MyTukxis.getIdCarro());
@@ -169,13 +174,14 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
             String batFinal = Integer.toString(bateriaFinal);
             String kmsViagem = Double.toString(kmViagem);
 
-            VolleyRequest.postRequest(idCarro, idDriver, batInicial, batFinal, kmsViagem, DBManager.getJsonArray());
+            VolleyRequest.postRequest(idCarro, idDriver, batInicial, batFinal, kmsViagem, DBManager.getJsonArrayUtilizacao());
 
         } else //Caso a viagem não tenha registado nenhuma coordenada apagamos o registo da outra tabela
         // ViagemInfo pois não faz sentido ter
         {
             //Apagar o resgisto actual que não faz sentido estar
-            db.apagaInfoViagem(viagemId);
+            //db.apagaInfoViagem(viagemId);
+            db.apagaInfoUtilizacao(utilizacaoId);
         }
 
         stopSelf();
@@ -304,7 +310,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
                         //localização
 
                         if (data != null && longitude != longitudeAnterior) {
-                            verif = db.insertData(longitude, latitude, altitude, data, viagemId);
+                            verif = db.insertData(longitude, latitude, altitude, data,utilizacaoId);
                             longitudeAnterior = longitude;//Guardamos o valor da longitude anterior
                             if (verif) {
                                 String tipo = "GPS";
@@ -317,7 +323,8 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
                             String tipo = "GPS";
                             if(tipoLocalizacao == TIPO_INTERNET)
                                 tipo = "INTERNET";
-                            Toast.makeText(getApplicationContext(), tipo+": Mesmos Dados guardados " + data, Toast.LENGTH_SHORT).show();
+                                 guardouAlgumaCoordenada = true;
+                                Toast.makeText(getApplicationContext(), tipo+": Mesmos Dados guardados " + data, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });

@@ -45,7 +45,8 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
     private int i;
     private double latAntiga,longAntiga,latAtual,longAtual;
     private  Marker marker;
-    private boolean mapaPreenchido=false;
+    private boolean mapaPreenchido = false;
+    private static Percurso percursoSelacionado = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,11 +64,10 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
         listaMyTrip=findViewById(R.id.listaMyTrip);
         myTripInfo =new ArrayList<String>();
-        Percurso percurso = null;
         if(getIntent().hasExtra("percurso")){
-           percurso = (Percurso) getIntent().getParcelableExtra("percurso");
+           percursoSelacionado = (Percurso) getIntent().getParcelableExtra("percurso");
         }
-        preencheListaMyTrip(percurso);
+        preencheListaMyTrip(percursoSelacionado);
         i=0;
         mapaPreenchido=false;
         startTimer();

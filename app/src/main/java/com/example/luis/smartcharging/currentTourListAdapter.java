@@ -42,8 +42,10 @@ public class currentTourListAdapter extends ArrayAdapter<String> implements View
 
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.destino_descricao, parent, false);
+        }
+            Log.e("merda","merda");
             if(getItemViewType(position)==1){
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.destino_descricao, parent, false);
                 TextView destino = (TextView) convertView.findViewById(R.id.destino);
                 TextView viagem = (TextView) convertView.findViewById(R.id.viagem);
                 TextView distancia = (TextView) convertView.findViewById(R.id.distancia);
@@ -69,9 +71,6 @@ public class currentTourListAdapter extends ArrayAdapter<String> implements View
                 descricao.setText(infoEkms[1]);
                 kms.setText(infoEkms[2]);
             }
-            }else {
-            convertView = (View)convertView.getTag();
-        }
 
 
 

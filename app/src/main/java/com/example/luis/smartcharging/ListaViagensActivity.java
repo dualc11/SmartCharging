@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,17 @@ public class ListaViagensActivity extends MyTukxis {
         recyclerView.setHasFixedSize(true);//Every item of listRace has a fixed size
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        Button btnSave = (Button) findViewById(R.id.btnSave);
 
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Percurso percurso = filtroPercurso(adpaterViagens.getIdPercursoCheck(),listaViagem);
+                Intent newItent = new Intent(getApplicationContext(),MapsActivity.class);
+                newItent.putExtra("percurso",percurso);
+                startActivity(newItent);
+            }
+        });
 
 
         listaViagem.add( new Percurso(1,"Funcal","Monte",30f));
@@ -48,9 +59,7 @@ public class ListaViagensActivity extends MyTukxis {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Percurso percurso = filtroPercurso(adpaterViagens.getIdPercursoCheck(),listaViagem);
         Intent newItent = new Intent(this,MapsActivity.class);
-        newItent.putExtra("percurso",percurso);
         startActivity(newItent);
     }
     public Percurso filtroPercurso(int id,ArrayList<Percurso> listaViagem){

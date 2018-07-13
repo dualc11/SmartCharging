@@ -23,7 +23,7 @@ public class IntroduzirPerBat extends MyTukxis {
     private static boolean foiParaWhatsapp;
     private Toolbar toolbar;
     private static final int OPCAO_VIAGEM_DECORRER = 1;
-
+    private static boolean comecouViagem = false;
 
     private View view;
 
@@ -70,8 +70,7 @@ public class IntroduzirPerBat extends MyTukxis {
     }
 
     /*Método para iniciar o serviço de começar a registar as coordenadas da viagem*/
-    public void iniciarViagem()
-    {
+    public void iniciarGps(){
         if(percentagemBat!=0)
         {
             if (!GpsService.getServicoIniciado())
@@ -82,6 +81,30 @@ public class IntroduzirPerBat extends MyTukxis {
                 int idCarro=MyTukxis.getIdCarro();
                 enviaInfoWhatsapp(idCarro,"está a ser usado pelo");
                 foiParaWhatsapp=true;
+            }
+            else
+            {
+                Toast.makeText(this,"Está a ser utilizado um carro",Toast.LENGTH_LONG).show();
+            }
+        }
+        else
+        {
+            Toast.makeText(this,"Por favor insira uma percentagem de bateria válida!",Toast.LENGTH_LONG).show();
+        }
+    }
+    public void iniciarViagem()
+    {
+        if(percentagemBat!=0)
+        {
+            if (!comecouViagem)
+            {
+               // startService(MyTukxis.getIntentGps());
+
+                //int idCarro=getIntent().getIntExtra("idCarro",0);
+                int idCarro=MyTukxis.getIdCarro();
+                enviaInfoWhatsapp(idCarro,"está a ser usado pelo");
+                foiParaWhatsapp=true;
+                comecouViagem = true;
             }
             else
             {
@@ -123,7 +146,8 @@ public class IntroduzirPerBat extends MyTukxis {
         //Caso seja para iniciar viagem
         if(getIntent().getIntExtra("opcao",0)==0)
         {
-            iniciarViagem();
+            iniciarGps();
+           // iniciarViagem();
         }
         //Caso seja para terminar viagem
         else if(getIntent().getIntExtra("opcao",0)==OPCAO_VIAGEM_DECORRER)
@@ -153,7 +177,8 @@ public class IntroduzirPerBat extends MyTukxis {
         {
             if(getIntent().getIntExtra("viagem",0)==2)
             {
-                iniciarViagem();
+                iniciarGps();
+                //iniciarViagem();
             }
             boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat, /*BeingCharging.getTucId()*/MyTukxis.getIdCarro(),
                     BeingCharging.getTomadaId());
