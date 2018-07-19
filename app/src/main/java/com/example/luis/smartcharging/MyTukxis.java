@@ -47,6 +47,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import static com.example.luis.smartcharging.DBManager.calculaKmUtilizacao;
+import static com.example.luis.smartcharging.VolleyRequest.getToken;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
 
@@ -65,6 +67,8 @@ public class MyTukxis extends AppCompatActivity {
     private Toolbar toolbar;
     private static  ImageView imageView = null;
 
+    private static final int TIPOVIAGEM = 1;
+    private static final int TIPOUTILIZACAO = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +111,14 @@ public class MyTukxis extends AppCompatActivity {
 
 
         VolleyRequest.loadCarros();
+      //  getToken();
+       // VolleyRequest.loadPlug();
+
+        try {
+            calculaKmUtilizacao(10);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -158,7 +170,8 @@ public class MyTukxis extends AppCompatActivity {
                 {
                     dLayout.closeDrawers();
                     try {
-                        pararServico();
+
+                        pararServico(2);//Receber um tipo de indica se é para parar a viagem ou utilizacao carro
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -246,20 +259,25 @@ public class MyTukxis extends AppCompatActivity {
     }
 
     //Método para terminar uma rota
-    public void pararServico() throws JSONException {
-        if(intent!=null)
-        {
-            //Para não permitir o serviço ser parado antes de ser iniciado.
-            if(GpsService.getServicoIniciado())
+    public void pararServico(int tipo) throws JSONException {
+        if(tipo == TIPOUTILIZACAO){
+            if(intent!=null)
             {
-                //String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
-                String mensagem="You want put your car charging? If not please click 'No' and read car code."+
-                        " Else click 'Yes'.";
-                alerta(mensagem,true);
+                //Para não permitir o serviço ser parado antes de ser iniciado.
+                if(GpsService.getServicoIniciado())
+                {
+                    //String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
+                    String mensagem="You want put your car charging? If not please click 'No' and read car code."+
+                            " Else click 'Yes'.";
+                    alerta(mensagem,true);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"You are not using a car!",Toast.LENGTH_SHORT).show();
+                }
             }
-            else
-            {
-                Toast.makeText(getApplicationContext(),"Não estava uma viagem em curso!",Toast.LENGTH_SHORT).show();
+            if(tipo == TIPOVIAGEM){
+
             }
         }
     }

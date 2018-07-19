@@ -14,6 +14,17 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 
+import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
+import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
+import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
+import static com.example.luis.smartcharging.DBManager.getUltimoDeslocacaoId;
+import static com.example.luis.smartcharging.DBManager.getUltimoUlizacaoId;
+import static com.example.luis.smartcharging.DBManager.insertUtilizaçãoIdBateriaInicialData;
+import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
+import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtilizacao;
+import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
+import static com.example.luis.smartcharging.GpsService.getEmViagem;
+
 public class IntroduzirPerBat extends MyTukxis {
 
     private SeekBar seekBar;
@@ -119,16 +130,37 @@ public class IntroduzirPerBat extends MyTukxis {
 
 
     /*Método para parar finalizar a viagem*/
-    public void terminarViagem() throws JSONException {
+    public void terminarUtilizacao() throws JSONException {
         if(percentagemBat!=0)
         {
             if (GpsService.getServicoIniciado())
             {
                 stopService(MyTukxis.getIntentGps());
-                //int idCarro=getIntent().getIntExtra("idCarro",0);
                 int idCarro=MyTukxis.getIdCarro();
                 enviaInfoWhatsapp(idCarro,"deixou de ser usado pelo");
                 foiParaWhatsapp=true;
+                if(getEmViagem()){
+                    int viagemId = getIdViagemAnterior();
+                    double kmViagem = calculaKmViagem(viagemId);
+                    updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
+
+                    //End tour (Miss emViagem = false)
+                }else{
+                    int deslocacaoId =  getUltimoDeslocacaoId();
+                    double kmDeslocacao = calculaKmDeslocacao(deslocacaoId);
+                    updateKmBateriaFinalDeslocacao(kmDeslocacao,IntroduzirPerBat.getPercentagemBat(),deslocacaoId);
+                    //End deslocação(MIss emViagem = false)
+                }
+                double kmUtilizacao = -1f;
+                int ultimoUtilizacaoId = getUltimoUlizacaoId();
+                try {
+                    //kmViagem = DBManager.calculaKmViagem(viagemId);
+                    kmUtilizacao = DBManager.calculaKmUtilizacao(getUltimoUlizacaoId());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                updateKmBateriaFinalUtilizacao(kmUtilizacao,IntroduzirPerBat.getPercentagemBat(),ultimoUtilizacaoId);
+
             }
             else
             {
@@ -152,14 +184,14 @@ public class IntroduzirPerBat extends MyTukxis {
         //Caso seja para terminar viagem
         else if(getIntent().getIntExtra("opcao",0)==OPCAO_VIAGEM_DECORRER)
         {
-            terminarViagem();
+            terminarUtilizacao();
         }
         //Caso seja para inicar carregamento
         else if(getIntent().getIntExtra("opcao",0)==2)
         {
             if(getIntent().getIntExtra("viagem",0)==1)
             {
-                terminarViagem();
+                terminarUtilizacao();
             }
             MyTukxis.getDb().colocaTucCarregar(percentagemBat, /*BeingCharging.getTucId()*/MyTukxis.getIdCarro(),
                     BeingCharging.getTomadaId(), MyTukxis.getUserId());

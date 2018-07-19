@@ -54,7 +54,6 @@ public class DBManager {
      */
     private static final String TABELA_UTILIZACAO_CARRO = "utilizacao_carro";
     private static final String ID_UTILIZACAO_CARRO = "id";
-    private static final String ID_GPS_LOGGER = "id_gps_logger";
     private static final String BATERIAINICIAL_UTILIZACAO_CARRO="bateriaInicial";
     private static final String BATERIAFINAL_UTILIZACAO_CARRO="bateriaFinal";
     private static final String DISTANCIAKM_UTILIZACAO_CARRO="distanciaKm";
@@ -62,7 +61,7 @@ public class DBManager {
     private static final String CARROID_UTILIZACAO_CARRO="carroId";
 
     private static final String CREATE_TABELA_UTILIZACAO_CARRO="CREATE TABLE "+TABELA_UTILIZACAO_CARRO+
-            "("+ID_UTILIZACAO_CARRO+" INTEGER PRIMARY KEY, "+BATERIAINICIAL_UTILIZACAO_CARRO+" INTEGER, "+BATERIAFINAL_UTILIZACAO_CARRO+" INTEGER, "+
+            "("+ID_UTILIZACAO_CARRO+" INTEGER PRIMARY KEY AUTOINCREMENT, "+BATERIAINICIAL_UTILIZACAO_CARRO+" INTEGER, "+BATERIAFINAL_UTILIZACAO_CARRO+" INTEGER, "+
             DISTANCIAKM_UTILIZACAO_CARRO+" DOUBLE, "+DATA_UTILIZACAO_CARRO+" STRING, "+CARROID_UTILIZACAO_CARRO+" INTEGER);";
 
     private static final String TABLE_VIAGEM_INFO="ViagemInfo";
@@ -74,7 +73,7 @@ public class DBManager {
     private static final String CARROID="carroId";
     private static final String UTILIZAO_ID_VIAGEM = "utilizacaoId";
     private static final String CREATE_TABLE_VIAGEM_INFO="CREATE TABLE "+TABLE_VIAGEM_INFO+
-            "("+VIAGEM_ID+" INTEGER PRIMARY KEY, "+BATERIAINICIAL+" INTEGER, "+BATERIAFINAL+" INTEGER, "+
+            "("+VIAGEM_ID+" INTEGER PRIMARY KEY AUTOINCREMENT, "+BATERIAINICIAL+" INTEGER, "+BATERIAFINAL+" INTEGER, "+
             DISTANCIAKM+" DOUBLE, "+DATA+" STRING, "+CARROID+" INTEGER, "+
             UTILIZACAOID+" INTEGER,"+
             "FOREIGN KEY ("+UTILIZACAOID+") REFERENCES "+TABELA_UTILIZACAO_CARRO+
@@ -137,6 +136,57 @@ public class DBManager {
     private static final String CREATE_TABLE_PERCURSO ="CREATE TABLE "+TABELA_PERCURSO+
             "("+ID_PERCURSO+"INTEGER PRIMARY KEY,"+ORIGEM_PERCURSO+" STRING, "+DESTINO_PERCURSO+" STRING," +
             DISTANCIA_PERCURSO +" DOUBLE)";
+    /**
+     * TABELA LOG DE VIAGEM
+     */
+    private static final String TABELA_LOG_VIAGEM = "logViagem";
+    private static final String ID_LOG_VIAGEM = "id";
+    private static final String LONGITUDE_LOG_VIAGEM = "longitude";
+    private static final String LATITUDE_LOG_VIAGEM= "latitude";
+    private static final String DATAEHORA_LOG_VIAGEM = "dataEhora";
+    private static final String VIAGEMID_LOG_VIAGEM = "viagemId";
+    private static final String ALTITUDE_LOG_VIAGEM= "altitude";
+    private static final String CREATE_TABLE_LOG_VIAGEM = "CREATE TABLE "+ TABELA_LOG_VIAGEM+" ( "+ID_LOG_VIAGEM+" INTEGER PRIMARY KEY AUTOINCREMENT " +
+            ", "+LONGITUDE_LOG_VIAGEM +" DOUBLE , "+LATITUDE_LOG_VIAGEM+" DOUBLE ,"+DATAEHORA_LOG_VIAGEM +" VARCHAR(45), " +
+            " "+ALTITUDE_LOG_VIAGEM+" DOUBLE ,"+
+            " "+VIAGEMID_LOG_VIAGEM+" INTEGER NOT NULL, FOREIGN KEY(`"+ VIAGEMID_LOG_VIAGEM+"`) REFERENCES `"+CREATE_TABLE_VIAGEM_INFO+"`(`"+VIAGEM_ID+"`))";
+
+    /**
+     *  TABELA LOG DE DESLOCAÇÃO
+     */
+    private static final String TABLE_DESLOCACAO="deslocacao";
+    private static final String BATERIAINICIAL_DESLOCACAO="bateriaInicial";
+    private static final String BATERIAFINAL_DESLOCACAO="bateriaFinal";
+    private static final String DISTANCIAKM_DESLOCACAO="distanciaKm";
+    private static final String DATA_DESLOCACAO="data";
+    private static final String ID_DESLOCACAO = "id";
+    private static final String CARROID_DESLOCACAO="carroId";
+    private static final String UTILIZAO_ID_DESLOCACAO= "utilizacaoId";
+    private static final String CREATE_TABLE_DESLOCACAO="CREATE TABLE "+TABLE_DESLOCACAO+
+            "("+ID_DESLOCACAO+" INTEGER PRIMARY KEY AUTOINCREMENT, "+BATERIAINICIAL_DESLOCACAO+" INTEGER, "+BATERIAFINAL_DESLOCACAO+" INTEGER, "+
+            DISTANCIAKM_DESLOCACAO+" DOUBLE, "+DATA_DESLOCACAO+" STRING, "+CARROID_DESLOCACAO+" INTEGER, "+
+            UTILIZAO_ID_DESLOCACAO+" INTEGER,"+
+            "FOREIGN KEY ("+UTILIZACAOID+") REFERENCES "+TABELA_UTILIZACAO_CARRO+
+            "("+ID_UTILIZACAO_CARRO+")"+");";
+
+    /**
+     * TABELA LOG DE DESLOCAÇÃO
+     */
+    private static final String TABELA_LOG_DESLOCACAO = "logDeslocacao";
+    private static final String ID_LOG_DESLOCACAO = "id";
+    private static final String LONGITUDE_LOG_DESLOCACAO = "longitude";
+    private static final String LATITUDE_LOG_DESLOCACAO= "latitude";
+    private static final String ALTITUDE_LOG_DESLOCACAO= "altitude";
+    private static final String DATAEHORA_LOG_DESLOCACAO = "dataEhora";
+    private static final String DESLOCACAOID_LOG_DESLOCACAO = "deslocacaoId";
+
+    private static final String CREATE_TABLE_LOG_DESLOCACAO = "CREATE TABLE "+ TABELA_LOG_DESLOCACAO+" ( "+ID_LOG_DESLOCACAO+" INTEGER PRIMARY KEY AUTOINCREMENT " +
+            ", "+LONGITUDE_LOG_DESLOCACAO +" DOUBLE , "+LATITUDE_LOG_DESLOCACAO+" DOUBLE ," +
+            " "+ALTITUDE_LOG_DESLOCACAO +" DOUBLE ,"+DATAEHORA_LOG_DESLOCACAO +" VARCHAR(45), " +
+            " "+DESLOCACAOID_LOG_DESLOCACAO+" INTEGER NOT NULL, FOREIGN KEY(`"+ DESLOCACAOID_LOG_DESLOCACAO+"`) REFERENCES `"+TABLE_DESLOCACAO+"`(`"+ID_DESLOCACAO+"`))";
+
+
+
     private static SQLiteDatabase db;
     private static JSONObject jsonObj;
     private static JSONArray jsonArray;
@@ -213,10 +263,13 @@ public class DBManager {
         db.execSQL(CREATE_TABLE_PLUG);
         db.execSQL(CREATE_TABLE_PERCURSO);
         db.execSQL(CREATE_TABLE_GPS_LOGGER);
+        db.execSQL(CREATE_TABLE_LOG_VIAGEM);
+        db.execSQL(CREATE_TABLE_DESLOCACAO);
+        db.execSQL(CREATE_TABLE_LOG_DESLOCACAO);
 
     }
 
-    public synchronized boolean insertData(double longitude, double latitude,double altitude, String dataEhora,int utilizacaoId)
+    public synchronized boolean insertDataDeslocamento(double longitude, double latitude,double altitude, String dataEhora,int deslocacaoId)
     {
 
         SQLiteStatement stm = null;
@@ -227,8 +280,43 @@ public class DBManager {
 
             String sql="";
 
-            sql="INSERT INTO "+TABLE_GPS_LOGGER+"("+LONGITUDE+","+LATITUDE+","+ALTITUDE+","+DATAEHORA+", "+UTILIZAO_ID_VIAGEM+")" +
-                    "VALUES("+longitude+","+latitude+","+altitude+",'"+dataEhora+"',"+utilizacaoId+")";
+            sql="INSERT INTO "+TABELA_LOG_DESLOCACAO+"("+LONGITUDE+","+LATITUDE+","+ALTITUDE+","+DATAEHORA+", "+DESLOCACAOID_LOG_DESLOCACAO+")" +
+                    "VALUES("+longitude+","+latitude+","+altitude+",'"+dataEhora+"',"+deslocacaoId+")";
+            Log.i("sdf",sql);
+            stm = db.compileStatement(sql);
+            Log.i("sdf",sql);
+            if (stm.executeInsert() <= 0)
+            {
+                Log.i(MODULE, "Failed insertion of appliance into database");
+            }
+            res = true;
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            res=false;
+            e.printStackTrace();
+        } finally	{
+            stm.close();
+            db.endTransaction();
+            Log.d(MODULE, "new appliance data inserted");
+
+        }
+
+        return true;
+    }
+    public synchronized boolean insertDataViagem(double longitude, double latitude,double altitude, String dataEhora,int viagemId)
+    {
+
+        SQLiteStatement stm = null;
+        boolean res=false;
+        db.beginTransaction();
+
+        try{
+
+            String sql="";
+
+            sql="INSERT INTO "+TABELA_LOG_VIAGEM+"("+LONGITUDE+","+LATITUDE+","+ALTITUDE+","+DATAEHORA+", "+VIAGEMID_LOG_VIAGEM+")" +
+                    "VALUES("+longitude+","+latitude+","+altitude+",'"+dataEhora+"',"+viagemId+")";
             Log.i("sdf",sql);
             stm = db.compileStatement(sql);
             Log.i("sdf",sql);
@@ -256,7 +344,7 @@ public class DBManager {
     {
         Cursor c;
 
-        c=db.rawQuery("SELECT MAX("+VIAGEMID+") FROM "+TABLE_GPS_LOGGER,null);
+        c=db.rawQuery("SELECT MAX("+VIAGEM_ID+") FROM "+TABLE_VIAGEM_INFO,null);
         int idViagemAnterior=0;
         while(c.moveToNext())
         {
@@ -267,24 +355,45 @@ public class DBManager {
     public static synchronized  double calculaKmUtilizacao(int idUtilizacao) throws JSONException {
         Cursor c;
 
+        c=db.rawQuery("SELECT "+TABLE_VIAGEM_INFO+"."+DISTANCIAKM+" , "+TABLE_DESLOCACAO+"."+DISTANCIAKM_DESLOCACAO+
+                " FROM "+TABLE_VIAGEM_INFO+", "+TABLE_DESLOCACAO+" WHERE ( ("+TABLE_VIAGEM_INFO+"."+UTILIZAO_ID_VIAGEM+"="+idUtilizacao+" OR "
+                +TABLE_DESLOCACAO+"."+DISTANCIAKM_DESLOCACAO+" = "+idUtilizacao+") AND "+TABLE_VIAGEM_INFO+"."+UTILIZAO_ID_VIAGEM+" = "+TABLE_DESLOCACAO+"."+UTILIZAO_ID_DESLOCACAO+")",null);
+
+        double longAnterior=0,latAnterior=0,longSeguinte=0,latSeguinte=0;
+        double kmTotalUtilizacao=0;
+        int i=0;
+        double kmVigem,kmDeslocacao;
+
+        while(c.moveToNext())
+        {
+            kmVigem = c.getDouble(0);
+            kmDeslocacao = c.getDouble(1);
+
+            kmTotalUtilizacao += kmTotalUtilizacao +kmVigem + kmDeslocacao;
+        }
+        return kmTotalUtilizacao;
+    }
+    public static synchronized  double calculaKmDeslocacao(int deslocacoId) throws JSONException {
+        Cursor c;
+
         c=db.rawQuery("SELECT "+LONGITUDE+","+LATITUDE+","+ALTITUDE+","+DATAEHORA+
-                " FROM "+TABLE_GPS_LOGGER+" WHERE "+UTILIZACAOID+"="+idUtilizacao,null);
+                " FROM "+TABELA_LOG_DESLOCACAO+" WHERE "+DESLOCACAOID_LOG_DESLOCACAO+"="+deslocacoId,null);
 
         double longAnterior=0,latAnterior=0,longSeguinte=0,latSeguinte=0;
         double kmTotalViagem=0;
         int i=0;
 
-        jsonObjUtilizacao=new JSONObject();
-        jsonArrayUtilizacao=new JSONArray();
+        //jsonObjUtilizacao=new JSONObject();
+        //jsonArrayUtilizacao=new JSONArray();
 
         while(c.moveToNext())
         {
             //Dados para mandar para o servidor
-            jsonObjUtilizacao.put("longitude",Double.toString(c.getDouble(0)));
+           /* jsonObjUtilizacao.put("longitude",Double.toString(c.getDouble(0)));
             jsonObjUtilizacao.put("latitude",Double.toString(c.getDouble(1)));
             jsonObjUtilizacao.put("altitude",Double.toString(c.getDouble(2)));
             jsonObjUtilizacao.put("dataEhora",c.getString(3));
-            jsonArrayUtilizacao.put(jsonObjUtilizacao);
+            jsonArrayUtilizacao.put(jsonObjUtilizacao);*/
 
             if(i==0)
             {
@@ -307,7 +416,7 @@ public class DBManager {
         Cursor c;
 
         c=db.rawQuery("SELECT "+LONGITUDE+","+LATITUDE+","+ALTITUDE+","+DATAEHORA+
-                " FROM "+TABLE_GPS_LOGGER+" WHERE "+VIAGEMID+"="+idViagem,null);
+                " FROM "+TABELA_LOG_VIAGEM+" WHERE "+VIAGEMID+"="+idViagem,null);
 
         double longAnterior=0,latAnterior=0,longSeguinte=0,latSeguinte=0;
         double kmTotalViagem=0;
@@ -345,7 +454,7 @@ public class DBManager {
 
     /*Método para quando é iniciada uma viagem guardar o id dessa viagem que se vai iniciar
     * e também guardar a percentagem de bateria antes da viagem começar*/
-    public synchronized boolean insertUtilizaçãoIdBateriaInicialData(int utilizacaoId,int bateriaInicial,int carroId){
+    public static synchronized boolean insertUtilizaçãoIdBateriaInicialData(int bateriaInicial,int carroId){
         String data=new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
         boolean res = false;
@@ -355,8 +464,8 @@ public class DBManager {
 
             String sql="";
 
-            sql="INSERT INTO "+TABELA_UTILIZACAO_CARRO+"("+ID_UTILIZACAO_CARRO+","+BATERIAFINAL_UTILIZACAO_CARRO+","+DATA_UTILIZACAO_CARRO+","+CARROID_UTILIZACAO_CARRO+")"+
-                    " VALUES("+utilizacaoId+","+bateriaInicial+",'"+data+"',"+carroId+")";
+            sql="INSERT INTO "+TABELA_UTILIZACAO_CARRO+"("+BATERIAINICIAL_UTILIZACAO_CARRO+","+DATA_UTILIZACAO_CARRO+","+CARROID_UTILIZACAO_CARRO+")"+
+                    " VALUES("+bateriaInicial+",'"+data+"',"+carroId+")";
 
             stm = db.compileStatement(sql);
             Log.i("sdfsd",sql);
@@ -378,7 +487,82 @@ public class DBManager {
         }
         return true;
     }
-    public synchronized boolean insertViagemIdBateriaInicialData(int idViagem,int bateriaInicial,int carroId)
+    public static synchronized boolean insertDeslocaoIdBateriaInicialData(int deslocacaoId, int bateriaInicial,int carroId){
+        String data=new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        SQLiteStatement stm = null;
+        boolean res=false;
+        db.beginTransaction();
+
+        try{
+
+            String sql="";
+
+            sql="INSERT INTO "+TABLE_DESLOCACAO+"("+BATERIAINICIAL_DESLOCACAO+","+DATA_DESLOCACAO+","+CARROID_DESLOCACAO+" , "+UTILIZAO_ID_DESLOCACAO+")"+
+                    " VALUES("+bateriaInicial+",'"+data+"',"+carroId+", "+deslocacaoId+")";
+
+            stm = db.compileStatement(sql);
+            Log.i("sdfsd",sql);
+            if (stm.executeInsert() <= 0)
+            {
+                Log.i(MODULE, "Failed insertion of appliance into database");
+            }
+            res = true;
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            res=false;
+            e.printStackTrace();
+        } finally	{
+            stm.close();
+            db.endTransaction();
+            Log.d(MODULE, "new appliance data inserted");
+
+        }
+        return true;
+    }
+
+
+    public static int getUltimoUlizacaoId(){
+        int res = -1;
+        db.beginTransaction();
+        try {
+            String[] Select = {"MAX(" + ID_UTILIZACAO_CARRO + ")"};
+            String From = TABELA_UTILIZACAO_CARRO;
+            // String   Where =ID+"=="+ID+" AND "+VIAGEMID+" == "+viagemId;
+            Cursor maxId = db.query(From, Select, null, null, null, null, null);
+            while (maxId.moveToNext()) {
+               res = maxId.getInt(0);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        } finally	{
+            db.endTransaction();
+
+        }
+        return res;
+
+    }
+    public static int getUltimoDeslocacaoId(){
+        int res = -1;
+        db.beginTransaction();
+        try {
+            String[] Select = {"MAX(" + ID_DESLOCACAO + ")"};
+            String From = TABLE_DESLOCACAO;
+            // String   Where =ID+"=="+ID+" AND "+VIAGEMID+" == "+viagemId;
+            Cursor maxId = db.query(From, Select, null, null, null, null, null);
+            while (maxId.moveToNext()) {
+                res = maxId.getInt(0);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        } finally	{
+            db.endTransaction();
+
+        }
+        return res;
+
+    }
+    public static synchronized boolean insertViagemIdBateriaInicialData(int utilizacaoId,int bateriaInicial,int carroId)
     {
         String data=new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
@@ -389,8 +573,8 @@ public class DBManager {
 
             String sql="";
 
-            sql="INSERT INTO "+TABLE_VIAGEM_INFO+"("+VIAGEMID+","+BATERIAINICIAL+","+DATA+","+CARROID+")"+
-                    " VALUES("+idViagem+","+bateriaInicial+",'"+data+"',"+carroId+")";
+            sql="INSERT INTO "+TABLE_VIAGEM_INFO+"("+BATERIAINICIAL+","+DATA+","+CARROID+","+UTILIZAO_ID_VIAGEM+")"+
+                    " VALUES("+bateriaInicial+",'"+data+"',"+carroId+" ,"+utilizacaoId+")";
 
             stm = db.compileStatement(sql);
             Log.i("sdfsd",sql);
@@ -412,7 +596,7 @@ public class DBManager {
         }
         return true;
     }
-    public boolean updateKmBateriaFinalUtilizacao(double kmViagem,int bateriaFinal,int utilizacao){
+    public static boolean updateKmBateriaFinalUtilizacao(double kmUtilizacao,int bateriaFinal,int utilizacaoId){
         SQLiteStatement stm = null;
         boolean res=false;
         db.beginTransaction();
@@ -422,7 +606,74 @@ public class DBManager {
             String sql="";
 
             sql="UPDATE "+TABELA_UTILIZACAO_CARRO+" SET "+BATERIAFINAL+"="+bateriaFinal+","
-                    +DISTANCIAKM+"="+kmViagem+" WHERE "+ID_UTILIZACAO_CARRO+"="+utilizacao;
+                    +DISTANCIAKM+"="+kmUtilizacao+" WHERE "+ID_UTILIZACAO_CARRO+"="+utilizacaoId;
+            Log.i("query: ",sql);
+
+            stm = db.compileStatement(sql);
+
+            if (stm.executeInsert() <= 0)
+            {
+                Log.i(MODULE, "Failed insertion of appliance into database");
+            }
+            res = true;
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            res=false;
+            e.printStackTrace();
+        } finally	{
+            stm.close();
+            db.endTransaction();
+            Log.d(MODULE, "new appliance data inserted");
+
+        }
+        return true;
+    }
+
+    public static boolean updateKmBateriaFinalViagem(double kmViagem,int bateriaFinal,int viagemId){
+        SQLiteStatement stm = null;
+        boolean res=false;
+        db.beginTransaction();
+
+        try{
+
+            String sql="";
+
+            sql="UPDATE "+TABLE_VIAGEM_INFO+" SET "+BATERIAFINAL+"="+bateriaFinal+","
+                    +DISTANCIAKM+"="+kmViagem+" WHERE "+VIAGEM_ID+"="+viagemId;
+            Log.i("query: ",sql);
+
+            stm = db.compileStatement(sql);
+
+            if (stm.executeInsert() <= 0)
+            {
+                Log.i(MODULE, "Failed insertion of appliance into database");
+            }
+            res = true;
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            res=false;
+            e.printStackTrace();
+        } finally	{
+            stm.close();
+            db.endTransaction();
+            Log.d(MODULE, "new appliance data inserted");
+
+        }
+        return true;
+    }
+    public static boolean updateKmBateriaFinalDeslocacao(double kmDeslocacao,int bateriaFinal,int deslocacaoId){
+        SQLiteStatement stm = null;
+        boolean res=false;
+        db.beginTransaction();
+
+        try{
+
+            String sql="";
+
+            sql="UPDATE "+TABLE_DESLOCACAO+" SET "+BATERIAFINAL+"="+bateriaFinal+","
+                    +DISTANCIAKM+"="+kmDeslocacao+" WHERE "+ID_DESLOCACAO+"="+deslocacaoId;
             Log.i("query: ",sql);
 
             stm = db.compileStatement(sql);
@@ -884,13 +1135,16 @@ public class DBManager {
                 " WHERE "+TABELA_PLUG+"."+ID_PLUG+"="+id+")";
         db.execSQL(query);
     }
-    public static ArrayList<GPSLogger> getGPSLogger(int viagemId){
+    public static ArrayList<GPSLogger> getGPSLogger(int viagemId,int deslocacaoId){
         ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
 
 
-        String [] Select ={ID,LONGITUDE,ALTITUDE,DATAEHORA,VIAGEMID};
+        String [] Select ={TABELA_LOG_VIAGEM+"."+ID,TABELA_LOG_VIAGEM+"."+LONGITUDE,TABELA_LOG_VIAGEM+"."+ALTITUDE,
+                TABELA_LOG_VIAGEM+"."+DATAEHORA,TABELA_LOG_VIAGEM+"."+VIAGEMID,
+                TABELA_LOG_DESLOCACAO+"."+ID,TABELA_LOG_DESLOCACAO+"."+LONGITUDE,TABELA_LOG_DESLOCACAO+"."+ALTITUDE,
+                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+VIAGEMID,};
         String From = TABLE_GPS_LOGGER;
-        String   Where =ID+"=="+ID+" AND "+VIAGEMID+" == "+viagemId;
+        String   Where = TABELA_LOG_VIAGEM+"."+ID+"=="+viagemId+" AND "+TABELA_LOG_DESLOCACAO+"."+ID+"=="+deslocacaoId;
         Cursor clistaGpsLogger = db.query(From,Select,Where,null,null,null,null);
         while (clistaGpsLogger.moveToNext()){
             GPSLogger gpsLogger = new GPSLogger();

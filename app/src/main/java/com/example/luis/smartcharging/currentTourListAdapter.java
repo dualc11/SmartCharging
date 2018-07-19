@@ -44,7 +44,7 @@ public class currentTourListAdapter extends ArrayAdapter<String> implements View
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.destino_descricao, parent, false);
         }
-            Log.e("merda","merda");
+
             if(getItemViewType(position)==1){
                 TextView destino = (TextView) convertView.findViewById(R.id.destino);
                 TextView viagem = (TextView) convertView.findViewById(R.id.viagem);

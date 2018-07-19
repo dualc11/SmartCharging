@@ -24,6 +24,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -48,6 +49,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 
+import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
+import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
+import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
+import static com.example.luis.smartcharging.DBManager.getPercurso;
+import static com.example.luis.smartcharging.DBManager.getUltimoDeslocacaoId;
+import static com.example.luis.smartcharging.DBManager.getUltimoUlizacaoId;
+import static com.example.luis.smartcharging.DBManager.insertDeslocaoIdBateriaInicialData;
+import static com.example.luis.smartcharging.DBManager.insertUtilizaçãoIdBateriaInicialData;
+import static com.example.luis.smartcharging.DBManager.insertViagemIdBateriaInicialData;
+import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
+import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
+import static com.example.luis.smartcharging.VolleyRequest.sendViagemLogAndDeslocacaoLog;
+
 public class GpsService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "get location";
@@ -66,8 +80,8 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     private final Handler handler = new Handler();
     private int bateriaInicial, bateriaFinal;
     private boolean guardouAlgumaCoordenada;
-
-    //Google api
+    private static int deslocacaoId;
+        //Google api
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
@@ -76,6 +90,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     private static final int TIPO_GPS = 1;
     private static final int TIPO_INTERNET = 2;
 
+    private static  boolean emViagem = false;
 
     //O sistema chama este método antes de chamar onStartCommand ou onBind para operações de configuração
     //este método é chamado apenas uma vez antes do serviço se iniciar.
@@ -85,15 +100,12 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
 
         super.onCreate();
         db = MyTukxis.getDb();
-        /**
-         * viagemId = DBManager.getIdViagemAnterior();
-         viagemId++;
-         db.insertViagemIdBateriaInicialData(viagemId, bateriaInicial, MyTukxis.getIdCarro());//Passar idCarro também
-         */
-        bateriaInicial = IntroduzirPerBat.getPercentagemBat();
-        utilizacaoId++;
-        db.insertUtilizaçãoIdBateriaInicialData(utilizacaoId,bateriaInicial,MyTukxis.getIdCarro());
 
+
+        iniciarUtilizacao();//Inicializa a tabela utilizacao e atualiza a variavel "utilizacaoId"
+        if(insertDeslocaoIdBateriaInicialData(utilizacaoId,bateriaInicial,MyTukxis.getIdCarro())){//Iniciliza a "tabela" deslocaçã0
+           deslocacaoId = getUltimoDeslocacaoId();
+        }
         guardouAlgumaCoordenada = false;
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -128,11 +140,6 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
                     public void onLocationAvailability(LocationAvailability locationAvailability) {
                             if (locationAvailability.isLocationAvailable() == false) {//Se não foi possivel obter localização por Internet
                                 tipoLocalizacao = TIPO_GPS;
-                            /*if(!isConnectWifiOrMobile(getApplicationContext())){//Verifica se existe INternet
-                                Toast.makeText(getApplicationContext(),"Não existe ligação a Internet",Toast.LENGTH_LONG).show();
-                                tipoLocalizacao = TIPO_GPS;//Muda a forma de obter localização
-
-                            }*/
                         }
                     }
 
@@ -155,16 +162,30 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
         if (guardouAlgumaCoordenada) //Caso durante a viagem tenha sido guardada alguma coordenada.
         {
             bateriaFinal = IntroduzirPerBat.getPercentagemBat();
-            double kmViagem = 0;
-            double kmUtilizacao = 0;
-
+            double kmViagem= 0,kmUtilizacao = 0,kmDeslocacao = 0;
+            if(emViagem){
+                try {
+                    kmViagem = calculaKmViagem(viagemId);
+                    updateKmBateriaFinalViagem(kmViagem,bateriaFinal,viagemId);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                try {
+                    kmDeslocacao = calculaKmDeslocacao(utilizacaoId);
+                    updateKmBateriaFinalDeslocacao(kmDeslocacao,bateriaFinal,deslocacaoId);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
                 //kmViagem = DBManager.calculaKmViagem(viagemId);
                 kmUtilizacao = DBManager.calculaKmUtilizacao(utilizacaoId);
+                db.updateKmBateriaFinalUtilizacao(kmUtilizacao,bateriaFinal,utilizacaoId);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            db.updateKmBateriaFinalUtilizacao(kmUtilizacao,bateriaFinal,utilizacaoId);
+            emViagem = false;
             //db.updateKmBateriaFinal(kmViagem, bateriaFinal, viagemId);
 
             //Enviar dados da viagem para o servidor
@@ -310,7 +331,12 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
                         //localização
 
                         if (data != null && longitude != longitudeAnterior) {
-                            verif = db.insertData(longitude, latitude, altitude, data,utilizacaoId);
+                            if(emViagem){
+                                verif = db.insertDataViagem(longitude, latitude, altitude, data, viagemId);
+                            }else{
+                                verif = db.insertDataDeslocamento(longitude, latitude, altitude, data, deslocacaoId);
+                            }
+
                             longitudeAnterior = longitude;//Guardamos o valor da longitude anterior
                             if (verif) {
                                 String tipo = "GPS";
@@ -424,4 +450,46 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
             return locationCallback;
 
     }
+    public static boolean getEmViagem (){return emViagem;}
+    public void iniciarUtilizacao(){
+        bateriaInicial = IntroduzirPerBat.getPercentagemBat();
+        boolean insertUtilizacao = insertUtilizaçãoIdBateriaInicialData(bateriaInicial,MyTukxis.getIdCarro());
+        if(insertUtilizacao){
+            utilizacaoId = getUltimoUlizacaoId();
+        }else {
+            Log.e("iniciarUilização","Não foi possivel inicializar UTILIZACAO");
+        }
+    }
+
+    public static void endTour(){//End tour and begin deslocacao
+        emViagem =  false;
+        if(insertDeslocaoIdBateriaInicialData(deslocacaoId,IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
+           deslocacaoId = getUltimoDeslocacaoId();
+            try {
+                double kmViagem = calculaKmViagem(viagemId);
+                updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public static void beginTour(){
+        emViagem = true;
+        sendViagemLogAndDeslocacaoLog(viagemId,deslocacaoId);
+        startTour();
+    }
+
+    public static void startTour(){//End deslocacao and Begin tour
+        if(insertViagemIdBateriaInicialData(deslocacaoId, IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
+            viagemId = getIdViagemAnterior();
+            try {
+                double kmDeslocacao = calculaKmDeslocacao(deslocacaoId);
+                updateKmBateriaFinalDeslocacao(kmDeslocacao,IntroduzirPerBat.getPercentagemBat(),deslocacaoId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
 }

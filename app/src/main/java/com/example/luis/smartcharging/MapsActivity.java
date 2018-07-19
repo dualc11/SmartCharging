@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,6 +30,10 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static com.example.luis.smartcharging.GpsService.beginTour;
+import static com.example.luis.smartcharging.GpsService.endTour;
+import static com.example.luis.smartcharging.GpsService.getEmViagem;
 
 public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
@@ -174,10 +179,24 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         mMap = googleMap;
         mapaPreenchido= DBManager.preencheMapa(mMap);
     }
-
     public void terminarViagem(View v) throws JSONException {
-        pararServico();
+        pararServico(1);
     }
+
+    public void isOnTour (View v){
+        if(getEmViagem()){
+            endTour();
+            TextView text = (TextView)v.findViewById(R.id.btnTour);
+            text.setText("Start the tour");
+
+        }else{
+            beginTour();
+            TextView text = (TextView)v.findViewById(R.id.btnTour);
+            text.setText("End the tour");
+
+        }
+    }
+
 
 
 }

@@ -33,7 +33,7 @@ public class VolleyRequest {
     //Para a conta
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
     private static final String urlActionPickDrop="";
-    private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars/";
+    private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars";
     private static String token = "";
     private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token="+token;
     private static boolean existToken = false;
@@ -305,5 +305,9 @@ public class VolleyRequest {
 
     public static void setUrlPlug(String urlPlug) {
         URL_PLUG = urlPlug;
+    }
+
+    public static void sendViagemLogAndDeslocacaoLog(int viagemId,int deslocacaoId){
+
     }
 }

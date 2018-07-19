@@ -44,11 +44,11 @@ public class BeingCharging extends MyTukxis {
         int opcaoCarregamento = getIntent().getIntExtra("opcaoCarregamento",0);
         if(opcaoCarregamento == disconect)
         {
-            title="You disconect";
+            title = "You disconect";
         }
         else if(opcaoCarregamento == connect)
         {
-            title="You connect";
+            title = "You connect";
         }
 
        info();
@@ -181,7 +181,7 @@ public class BeingCharging extends MyTukxis {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which)
                                     {
-                                        stringCodigo="idTomada";
+                                        stringCodigo = "idTomada";
                                         codigo=0;
                                         qrScan.initiateScan();
                                     }
