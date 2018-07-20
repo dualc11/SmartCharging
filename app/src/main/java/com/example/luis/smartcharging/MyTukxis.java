@@ -48,9 +48,12 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import static com.example.luis.smartcharging.DBManager.calculaKmUtilizacao;
+import static com.example.luis.smartcharging.DBManager.getLogDeslocacao;
+import static com.example.luis.smartcharging.DBManager.getLogViagem;
 import static com.example.luis.smartcharging.VolleyRequest.getToken;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
+import static com.example.luis.smartcharging.VolleyRequest.postViagem;
 
 public class MyTukxis extends AppCompatActivity {
 
@@ -111,14 +114,9 @@ public class MyTukxis extends AppCompatActivity {
 
 
         VolleyRequest.loadCarros();
-      //  getToken();
+      //  getToken();i
        // VolleyRequest.loadPlug();
-
-        try {
-            calculaKmUtilizacao(10);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        postViagem(3,10);
 
 
     }

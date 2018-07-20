@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 
+import static com.example.luis.smartcharging.BeingCharging.getTomadaId;
 import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
 import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
 import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
@@ -24,6 +25,7 @@ import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslo
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtilizacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
 import static com.example.luis.smartcharging.GpsService.getEmViagem;
+import static com.example.luis.smartcharging.VolleyRequest.sendPickUp;
 
 public class IntroduzirPerBat extends MyTukxis {
 
@@ -178,6 +180,7 @@ public class IntroduzirPerBat extends MyTukxis {
         //Caso seja para iniciar viagem
         if(getIntent().getIntExtra("opcao",0)==0)
         {
+            sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
             iniciarGps();
            // iniciarViagem();
         }
@@ -194,7 +197,7 @@ public class IntroduzirPerBat extends MyTukxis {
                 terminarUtilizacao();
             }
             MyTukxis.getDb().colocaTucCarregar(percentagemBat, /*BeingCharging.getTucId()*/MyTukxis.getIdCarro(),
-                    BeingCharging.getTomadaId(), MyTukxis.getUserId());
+                    getTomadaId(), MyTukxis.getUserId());
             Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
 
             if(getIntent().getIntExtra("viagem",0)!=1)
@@ -213,7 +216,7 @@ public class IntroduzirPerBat extends MyTukxis {
                 //iniciarViagem();
             }
             boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat, /*BeingCharging.getTucId()*/MyTukxis.getIdCarro(),
-                    BeingCharging.getTomadaId());
+                    getTomadaId());
             if(estado)
             {
                 Toast.makeText(this,"BeingCharging terminado",Toast.LENGTH_LONG).show();

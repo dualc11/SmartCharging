@@ -9,7 +9,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -19,7 +18,6 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,8 +32,9 @@ public class VolleyRequest {
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
     private static final String urlActionPickDrop="";
     private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars";
-    private static String token = "";
+    private static String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NWQ3NDQ0MC04YzJlLTExZTgtYmE1OC03MTY1NzQyYjA4M2YiLCJpYXQiOjE1MzIwOTkxMDAsInRva2VuIjoiY2JlNmEyNTgtNGMwZi00MGViLWI5MTMtMjU1ODFkYjg4NzJiIn0.3dMEl_bj3P6sahDXBrzCv6FJe8ayCRwKBFM8aAFJGnA";
     private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token="+token;
+    private static final String URL_SEND_DRIVER = "https://smile.prsma.com/tukxi/api/car/";
     private static boolean existToken = false;
 
 
@@ -162,6 +161,46 @@ public class VolleyRequest {
         queue.add(postRequest);
 
     }
+    public static void sendPickUp(int carId,int batLevel,int plugId){
+        String url = URL_SEND_DRIVER+carId+"/action/pickup?access_token="+token;
+        StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject =  new JSONObject(response);
+                    Log.e("sendPickup",jsonObject.getString("body"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("error",error.toString());
+            }
+        }){
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return new JSONObject()
+                            .put("batLevel",String.valueOf(batLevel))
+                            .put("plugId",String.valueOf(plugId))
+                            .toString().getBytes();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+        queue.add(driverInfoRequest);
+    }
+    public static void getDriverInfo(){
+
+    }
     public static void loadPlug(){
         StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG,new Response.Listener<String>(){
             @Override
@@ -196,13 +235,25 @@ public class VolleyRequest {
         };
         queue.add(postRequest);
     }
-    public static void postViagem (int idViagem){
-     StringRequest postRequest = new StringRequest(Request.Method.POST, "http://10.2.220.99:3000",
+    public static void postViagem (int viagemId,int deslocacaoId){
+         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/1/action/pickup?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhNjg1M2I5MC04YzI4LTExZTgtYjE0My03Zjc1NDFjMTcwMTAiLCJpYXQiOjE1MzIwOTY2ODUsInRva2VuIjoiYzQ0NjkxMmEtNzA4My00ODc1LWFjNjMtYTcxN2Q5NWIxZTUxIn0.Ez6f3cyrPCtaRdegifmg7odocMHVMIQRDwyd_q7lg8w"
+                ,
               new Response.Listener<String>()
               {
                   @Override
                   public void onResponse(String response) {
                       // response
+
+                      JSONObject res = null;
+                      try {
+                          res = new JSONObject(response);
+                          String body = res.getString("body");
+                          Log.e("res",body);
+                      } catch (JSONException e) {
+                          e.printStackTrace();
+                      }
+
+
                       Log.d("Response", response);
                   }
               },
@@ -211,34 +262,71 @@ public class VolleyRequest {
                   @Override
                   public void onErrorResponse(VolleyError error) {
                       // error
-                      Log.d("Error.Response", error.toString());
+
+                      Log.e("Error.Response", error.networkResponse.toString());
                   }
               }
       ) {
-          @Override
+         @Override
+         public byte[] getBody() throws AuthFailureError {
+
+             String res = "";
+             ArrayList<GPSLogger> listaGPSLogger = DBManager.getLogViagem(viagemId);
+             ArrayList<GPSLogger> listaGpsDeslocacao = DBManager.getLogDeslocacao(deslocacaoId);
+             JSONObject resultado = new JSONObject();
+             JSONArray jsonArray = new JSONArray();
+             for (int i = 0;i<listaGPSLogger.size();i++){
+                 JSONObject jsonObject = new JSONObject();
+                 try {
+                     jsonObject.put("altitude", Float.toString(listaGPSLogger.get(i).getAltitude()));
+                     jsonObject.put("longitude", Float.toString(listaGPSLogger.get(i).getLongitude()));
+                     jsonObject.put("latitude",Float.toString(listaGPSLogger.get(i).getAltitude()));
+                     jsonObject.put("data", Long.toString(listaGPSLogger.get(i).getData().getTime()));
+
+                     jsonArray.put(jsonObject);
+
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                 }
+             }
+             try {
+                 resultado.put("logRota",jsonArray);
+             } catch (JSONException e) {
+                 e.printStackTrace();
+             }
+
+             for (int i = 0;i<listaGpsDeslocacao.size();i++){
+                 JSONObject jsonObject = new JSONObject();
+                 try {
+                     jsonObject.put("altitude", Float.toString(listaGpsDeslocacao.get(i).getAltitude()));
+                     jsonObject.put("longitude", Float.toString(listaGpsDeslocacao.get(i).getLongitude()));
+                     jsonObject.put("latitude",Float.toString(listaGpsDeslocacao.get(i).getAltitude()));
+                     jsonObject.put("data", Long.toString(listaGpsDeslocacao.get(i).getData().getTime()));
+
+                     jsonArray.put(jsonObject);
+
+                 } catch (JSONException e) {
+                     e.printStackTrace();
+                 }
+             }
+             try {
+                 resultado.put("logDeslocacao",jsonArray);
+             } catch (JSONException e) {
+                 e.printStackTrace();
+             }
+             return resultado.toString().getBytes();
+         }
+
+             @Override
+             public String getBodyContentType() {
+                 return "application/json; charset=utf-8";
+             }
+
+             @Override
           protected Map<String, String> getParams()
           {
-              ArrayList<GPSLogger> listaGPSLogger = DBManager.getGPSLogger(idViagem);
-              Map<String, String>  params = new HashMap<String, String>();
-             String res = "";
-             JSONArray jsonArray = new JSONArray();
-              for (int i = 0;i<listaGPSLogger.size();i++){
-                  JSONObject jsonObject = new JSONObject();
-                  try {
-                      jsonObject.put("id", Integer.toString(listaGPSLogger.get(i).getId()));
-                      jsonObject.put("longitude", Float.toString(listaGPSLogger.get(i).getLongitude()));
-                      jsonObject.put("latitude",Float.toString(listaGPSLogger.get(i).getAltitude()));
-                      jsonObject.put("data", listaGPSLogger.get(i).getData().toString());
-                      jsonObject.put("viagemId",Integer.toString(listaGPSLogger.get(i).getViagemId()));
-
-                      jsonArray.put(i,jsonObject);
-                  } catch (JSONException e) {
-                      e.printStackTrace();
-                  }
-
-              }
-                params.put("dados",jsonArray.toString());
-              return params;
+              HashMap<String,String> params = new HashMap<>();
+            return params;
           }
 
          @Override

@@ -1135,35 +1135,70 @@ public class DBManager {
                 " WHERE "+TABELA_PLUG+"."+ID_PLUG+"="+id+")";
         db.execSQL(query);
     }
-    public static ArrayList<GPSLogger> getGPSLogger(int viagemId,int deslocacaoId){
+    public static ArrayList<GPSLogger> getLogViagem(int viagemId){
         ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
 
 
-        String [] Select ={TABELA_LOG_VIAGEM+"."+ID,TABELA_LOG_VIAGEM+"."+LONGITUDE,TABELA_LOG_VIAGEM+"."+ALTITUDE,
-                TABELA_LOG_VIAGEM+"."+DATAEHORA,TABELA_LOG_VIAGEM+"."+VIAGEMID,
-                TABELA_LOG_DESLOCACAO+"."+ID,TABELA_LOG_DESLOCACAO+"."+LONGITUDE,TABELA_LOG_DESLOCACAO+"."+ALTITUDE,
-                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+VIAGEMID,};
-        String From = TABLE_GPS_LOGGER;
-        String   Where = TABELA_LOG_VIAGEM+"."+ID+"=="+viagemId+" AND "+TABELA_LOG_DESLOCACAO+"."+ID+"=="+deslocacaoId;
+        String [] Select ={TABELA_LOG_VIAGEM+"."+ID_LOG_VIAGEM,TABELA_LOG_VIAGEM+"."+LONGITUDE,TABELA_LOG_VIAGEM+"."+ALTITUDE,
+                TABELA_LOG_VIAGEM+"."+DATAEHORA,TABELA_LOG_VIAGEM+"."+VIAGEMID/*,
+                TABELA_LOG_DESLOCACAO+"."+ID_LOG_DESLOCACAO,TABELA_LOG_DESLOCACAO+"."+LONGITUDE,TABELA_LOG_DESLOCACAO+"."+ALTITUDE,
+                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO,*/};
+        String From = TABELA_LOG_VIAGEM;
+        String   Where = TABELA_LOG_VIAGEM+"."+VIAGEMID_LOG_VIAGEM+"=="+viagemId;
         Cursor clistaGpsLogger = db.query(From,Select,Where,null,null,null,null);
         while (clistaGpsLogger.moveToNext()){
-            GPSLogger gpsLogger = new GPSLogger();
-            gpsLogger.setId(clistaGpsLogger.getInt(0));
-            gpsLogger.setLongitude(clistaGpsLogger.getFloat(1));
-            gpsLogger.setAltitude(clistaGpsLogger.getFloat(2));
+            GPSLogger logViagem = new GPSLogger();
+
+
+            logViagem.setId(clistaGpsLogger.getInt(0));
+            logViagem.setLongitude(clistaGpsLogger.getFloat(1));
+            logViagem.setAltitude(clistaGpsLogger.getFloat(2));
             String stringData = clistaGpsLogger.getString(3);
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
             try {
                 Date date = format.parse(stringData);
-                gpsLogger.setData(date);
+                logViagem.setData(date);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            gpsLogger.setViagemId(clistaGpsLogger.getInt(4));
-            listaGpsLoggers.add(gpsLogger);
+            logViagem.setViagemId(clistaGpsLogger.getInt(4));
+            listaGpsLoggers.add(logViagem);
+
         }
         return  listaGpsLoggers;
     }
+
+    public static ArrayList<GPSLogger> getLogDeslocacao(int deslocacaoId){
+        ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
+
+
+        String [] Select ={TABELA_LOG_DESLOCACAO+"."+ID_LOG_DESLOCACAO,TABELA_LOG_DESLOCACAO+"."+LONGITUDE,TABELA_LOG_DESLOCACAO+"."+ALTITUDE,
+                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO,};
+        String From = TABELA_LOG_DESLOCACAO;
+        String   Where = TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO+"=="+deslocacaoId;
+        Cursor clistaGpsLogger = db.query(From,Select,Where,null,null,null,null);
+        while (clistaGpsLogger.moveToNext()){
+            GPSLogger logDeslocacao = new GPSLogger();
+
+
+            logDeslocacao.setId(clistaGpsLogger.getInt(0));
+            logDeslocacao.setLongitude(clistaGpsLogger.getFloat(1));
+            logDeslocacao.setAltitude(clistaGpsLogger.getFloat(2));
+            String stringData = clistaGpsLogger.getString(3);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            try {
+                Date date = format.parse(stringData);
+                logDeslocacao.setData(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            logDeslocacao.setViagemId(clistaGpsLogger.getInt(4));
+            listaGpsLoggers.add(logDeslocacao);
+
+        }
+        return  listaGpsLoggers;
+    }
+
 
     public static String getMODULE() {
         return MODULE;
