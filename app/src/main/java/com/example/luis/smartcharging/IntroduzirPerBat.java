@@ -212,6 +212,7 @@ public class IntroduzirPerBat extends MyTukxis {
         {
             if(getIntent().getIntExtra("viagem",0)==2)
             {
+                sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
                 iniciarGps();
                 //iniciarViagem();
             }

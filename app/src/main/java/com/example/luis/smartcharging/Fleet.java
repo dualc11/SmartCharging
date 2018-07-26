@@ -77,6 +77,11 @@ public class Fleet extends MyTukxis {
             }
 
             @Override
+            public void onSucess(JSONObject result) {
+
+            }
+
+            @Override
             public void onFail(VolleyError error) {
                 Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar o feed", Toast.LENGTH_LONG);
                 toast.show();

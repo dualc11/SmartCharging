@@ -1,5 +1,7 @@
 package com.example.luis.smartcharging;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,18 +23,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.example.luis.smartcharging.MyTukxis.getContext;
 
 public class VolleyRequest {
 
-    private static final RequestQueue queue=Volley.newRequestQueue(getContext());
+    private static final RequestQueue queue = Volley.newRequestQueue(Login.getContext());
     private static final String url="http://66.175.221.248:300/test";
     //private static final String url="http://10.2.0.70:3000/teste";
     //Para a conta
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
     private static final String urlActionPickDrop="";
     private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars";
-    private static String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NWQ3NDQ0MC04YzJlLTExZTgtYmE1OC03MTY1NzQyYjA4M2YiLCJpYXQiOjE1MzIwOTkxMDAsInRva2VuIjoiY2JlNmEyNTgtNGMwZi00MGViLWI5MTMtMjU1ODFkYjg4NzJiIn0.3dMEl_bj3P6sahDXBrzCv6FJe8ayCRwKBFM8aAFJGnA";
+    private static String token = "";
     private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token="+token;
     private static final String URL_SEND_DRIVER = "https://smile.prsma.com/tukxi/api/car/";
     private static boolean existToken = false;
@@ -154,6 +157,7 @@ public class VolleyRequest {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+               Log.e("errorCars",""+error.toString());
                 Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar os carros", Toast.LENGTH_LONG);
                 toast.show();
             }
@@ -186,9 +190,11 @@ public class VolleyRequest {
             @Override
             public byte[] getBody() throws AuthFailureError {
                 try {
+                    String plug = "";
+                    if(plugId==0){plug = null;}else{plug = String.valueOf(plugId);}
                     return new JSONObject()
                             .put("batLevel",String.valueOf(batLevel))
-                            .put("plugId",String.valueOf(plugId))
+                            .put("plugId",plug)
                             .toString().getBytes();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -236,7 +242,7 @@ public class VolleyRequest {
         queue.add(postRequest);
     }
     public static void postViagem (int viagemId,int deslocacaoId){
-         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/1/action/pickup?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhNjg1M2I5MC04YzI4LTExZTgtYjE0My03Zjc1NDFjMTcwMTAiLCJpYXQiOjE1MzIwOTY2ODUsInRva2VuIjoiYzQ0NjkxMmEtNzA4My00ODc1LWFjNjMtYTcxN2Q5NWIxZTUxIn0.Ez6f3cyrPCtaRdegifmg7odocMHVMIQRDwyd_q7lg8w"
+         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/1/action/pickup?access_token="+token
                 ,
               new Response.Listener<String>()
               {
@@ -261,9 +267,7 @@ public class VolleyRequest {
               {
                   @Override
                   public void onErrorResponse(VolleyError error) {
-                      // error
-
-                      Log.e("Error.Response", error.networkResponse.toString());
+                      Log.e("Error.Response", error.toString());
                   }
               }
       ) {
@@ -337,8 +341,9 @@ public class VolleyRequest {
       queue.add(postRequest);
   }
 
-  public static void getToken(String username,String password){
-      if(!existToken){
+  public static void getToken(String username, String password, final VolleyCallback volleyCallback){
+      SharedPreferences sPref = Login.getContext().getSharedPreferences("loginInfo",MODE_PRIVATE);
+      HashMap<String,String> coisas = (HashMap<String, String>) sPref.getAll();
           StringRequest postRequest = new StringRequest(Request.Method.POST,URL_LOGIN,new Response.Listener<String>(){
               @Override
               public void onResponse(String responseString) {
@@ -347,9 +352,7 @@ public class VolleyRequest {
           }, new Response.ErrorListener() {
               @Override
               public void onErrorResponse(VolleyError error) {
-
-                  Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar realizar o Login", Toast.LENGTH_LONG);
-                  toast.show();
+                  volleyCallback.onFail(error);
               }
 
           }){
@@ -364,9 +367,8 @@ public class VolleyRequest {
               @Override
               protected void deliverResponse(String response) {
                   try {
-                      JSONObject loginInfo = new JSONObject(response);
-                      VolleyRequest.setToken(loginInfo.getString("access_token"));
-                      VolleyRequest.setUrlPlug(VolleyRequest.getUrlPlug()+VolleyRequest.getToken());
+                       JSONObject loginInfo = new JSONObject(response);
+                      volleyCallback.onSucess(loginInfo);
                   } catch (JSONException e) {
                       e.printStackTrace();
                   }
@@ -374,9 +376,8 @@ public class VolleyRequest {
               }
 
           };
-          existToken =  true;
           queue.add(postRequest);
-      }
+
   }
 
     public static String getToken() {

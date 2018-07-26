@@ -60,6 +60,7 @@ import static com.example.luis.smartcharging.DBManager.insertUtilizaçãoIdBater
 import static com.example.luis.smartcharging.DBManager.insertViagemIdBateriaInicialData;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
+import static com.example.luis.smartcharging.VolleyRequest.postViagem;
 import static com.example.luis.smartcharging.VolleyRequest.sendViagemLogAndDeslocacaoLog;
 
 public class GpsService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -468,6 +469,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
             try {
                 double kmViagem = calculaKmViagem(viagemId);
                 updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
+                postViagem(viagemId,deslocacaoId);//Send data to server(deslocacao log and viagem tour)
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -475,8 +477,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     }
     public static void beginTour(){
         emViagem = true;
-        sendViagemLogAndDeslocacaoLog(viagemId,deslocacaoId);
-        startTour();
+      startTour();
     }
 
     public static void startTour(){//End deslocacao and Begin tour

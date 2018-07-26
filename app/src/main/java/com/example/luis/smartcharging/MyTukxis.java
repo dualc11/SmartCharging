@@ -1,6 +1,7 @@
 package com.example.luis.smartcharging;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -69,7 +70,7 @@ public class MyTukxis extends AppCompatActivity {
     private DrawerLayout dLayout;
     private Toolbar toolbar;
     private static  ImageView imageView = null;
-
+    private static boolean isCarsRefreshed = false;
     private static final int TIPOVIAGEM = 1;
     private static final int TIPOUTILIZACAO = 2;
 
@@ -77,14 +78,12 @@ public class MyTukxis extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_tukxis);
-
-        sharedPref=getSharedPreferences("Configuração",Context.MODE_PRIVATE);
+        sharedPref = getSharedPreferences("loginInfo",Context.MODE_PRIVATE);
         editor = sharedPref.edit();
-        userId=sharedPref.getString("UserIdentificador",null);
+        userId = sharedPref.getString("driverFirstName",null);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
-
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
 
@@ -103,24 +102,16 @@ public class MyTukxis extends AppCompatActivity {
         }
         context = getApplicationContext();
         db = DBManager.getDBManager();
-        VolleyRequest.getToken("claudiosardinha1997@gmail.com","12345");
-
         //intializing scan object
         qrScan = new IntentIntegrator(this);
 
-        if(!userIdRegistado()) {
-            registoUserId();
-        }
-
-
-        VolleyRequest.loadCarros();
-      //  getToken();i
-       // VolleyRequest.loadPlug();
-        postViagem(3,10);
-
-
     }
-
+    public void checkCars(){
+        if(!isCarsRefreshed){
+            VolleyRequest.loadCarros();
+            isCarsRefreshed = true;
+        }
+    }
     //Método para saber quando o utilizador carregou na toolbar
     public void navigationClick(Toolbar toolbar)
     {
