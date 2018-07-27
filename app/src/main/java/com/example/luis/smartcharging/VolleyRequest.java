@@ -44,7 +44,16 @@ public class VolleyRequest {
     private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token="+token;
     private static final String URL_SEND_DRIVER = "https://smile.prsma.com/tukxi/api/car/";
     private static boolean existToken = false;
+    private static final String ACTION_BEGIN_CHARGE = "beginCharge";
+    private static final String ACTION_STOP_CHARGE = "stopCharge";
 
+    public static String getActionBeginCharge() {
+        return ACTION_BEGIN_CHARGE;
+    }
+
+    public static String getActionStopCharge() {
+        return ACTION_STOP_CHARGE;
+    }
 
     /**
  * VARIAVEIS SOBRE A PASSWORD
@@ -209,7 +218,7 @@ public class VolleyRequest {
         queue.add(driverInfoRequest);
     }
 
-    public static void sendBeingCharge(int bat,int carId,int plugId){
+    public static void sendChargeInfo(String action, int bat,int carId,int plugId){
         String beginDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
         Date date = new Date();
@@ -218,7 +227,6 @@ public class VolleyRequest {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        String action = "begingCharge";
         String url = URL_SEND_DRIVER+carId+"/action/"+action+"?access_token="+token;
         Date finalDate = date;
         StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -249,7 +257,7 @@ public class VolleyRequest {
                     return new JSONObject()
                             .put("batLevel",String.valueOf(bat))
                             .put("plugId",plug)
-                            .put("beginDate", String.valueOf(finalDate.getTime()))
+                            .put(action+"date", String.valueOf(finalDate.getTime()))
                             .toString().getBytes();
                 } catch (JSONException e) {
                     e.printStackTrace();

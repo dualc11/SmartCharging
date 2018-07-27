@@ -26,7 +26,7 @@ import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslo
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtilizacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
 import static com.example.luis.smartcharging.GpsService.getEmViagem;
-import static com.example.luis.smartcharging.VolleyRequest.sendBeingCharge;
+import static com.example.luis.smartcharging.VolleyRequest.sendChargeInfo;
 import static com.example.luis.smartcharging.VolleyRequest.sendPickUp;
 
 public class IntroduzirPerBat extends MyTukxis {
@@ -200,7 +200,7 @@ public class IntroduzirPerBat extends MyTukxis {
             }
             MyTukxis.getDb().colocaTucCarregar(percentagemBat,MyTukxis.getIdCarro(),
                     getTomadaId(), String.valueOf(MyTukxis.getUserId()));
-            sendBeingCharge(percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
+            sendChargeInfo(VolleyRequest.getActionBeginCharge(),percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
             //SENDCARRGAR INFO AQUI
             Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
 
@@ -222,8 +222,7 @@ public class IntroduzirPerBat extends MyTukxis {
             }
             boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
                     getTomadaId());
-            getInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
-                    getTomadaId());
+            sendChargeInfo(VolleyRequest.getActionStopCharge(),percentagemBat,getIdCarro(),getTomadaId());
             if(estado)
             {
 
