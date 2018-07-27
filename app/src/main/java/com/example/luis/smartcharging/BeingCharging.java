@@ -80,7 +80,7 @@ public class BeingCharging extends MyTukxis {
                     //Caso seja o Tuc-Tuc para identificar
                     if(codigo == codigoTomda)
                     {
-                        tomadaId=resultadoCodigo;
+                        tomadaId = resultadoCodigo;
                         if(DBManager.existePulg(tomadaId)){
                             confirmacao("plug",tomadaId);
                         }else{

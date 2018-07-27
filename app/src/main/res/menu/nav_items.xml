@@ -30,6 +30,11 @@
             android:orderInCategory="5"
             android:icon="@drawable/plug"/>
         <item
+            android:id="@+id/stopCharging"
+            android:title="Stop car charge"
+            android:orderInCategory="6"
+            android:icon="@drawable/charging"/>
+        <item
             android:id="@+id/aCarregar"
             android:title="Cars charging"
             android:orderInCategory="6"

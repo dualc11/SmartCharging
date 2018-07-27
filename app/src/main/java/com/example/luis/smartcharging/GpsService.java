@@ -61,7 +61,6 @@ import static com.example.luis.smartcharging.DBManager.insertViagemIdBateriaInic
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
 import static com.example.luis.smartcharging.VolleyRequest.postViagem;
-import static com.example.luis.smartcharging.VolleyRequest.sendViagemLogAndDeslocacaoLog;
 
 public class GpsService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -191,7 +190,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
 
             //Enviar dados da viagem para o servidor
             String idCarro = Integer.toString(MyTukxis.getIdCarro());
-            String idDriver = MyTukxis.getUserId();
+            int idDriver = MyTukxis.getUserId();
             String batInicial = Integer.toString(bateriaInicial);
             String batFinal = Integer.toString(bateriaFinal);
             String kmsViagem = Double.toString(kmViagem);

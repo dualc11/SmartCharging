@@ -862,7 +862,7 @@ public class DBManager {
 
     public synchronized boolean colocaTucCarregar(int bateriaInicio,int tucId,int tomadaId,String userId)
     {
-        String horaInicio=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+        String horaInicio = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
         boolean res=false;
         db.beginTransaction();
@@ -894,7 +894,31 @@ public class DBManager {
         }
         return true;
     }
-
+    public static synchronized Carregamento getInfoCarregamento(int bateriaFim, int tucId,int tomadaId){
+        Carregamento carregamento = null;
+        String[] col = new String[]{IDCARREGAMENTO,HORAINICIO,HORAFIM,TUCID,
+                TOMADAID,USERID,BATERIAINICIAL,BATERIAFINAL};
+        Cursor cursor = db.query(TABLE_CARREGAMENTOS, col, BATERIAFINAL+" IS NULL AND "+TUCID+" == "+tucId+" AND "+TOMADAID+ " == "+tomadaId,
+                null, null, null, null);
+        Percurso percurso = null;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+        while (cursor.moveToNext()){
+            int idCarregamento = cursor.getInt(0);
+            String dI = cursor.getString(1);
+            String dF = cursor.getString(2);
+            Date horaInicio = null,horaFinal = null;
+            try {
+                horaInicio= simpleDateFormat.parse(dI);
+                horaFinal = simpleDateFormat.parse(dF);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            int userId =  cursor.getInt(5);
+            int batInicial =  cursor.getInt(6);
+            carregamento = new Carregamento(idCarregamento,userId,tomadaId,tucId,batInicial,batInicial,horaInicio,horaFinal);
+        }
+        return carregamento;
+    }
     public synchronized boolean atualizaInfoCarregamento(int bateriaFim, int tucId,int tomadaId)
     {
         String horaFim=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());

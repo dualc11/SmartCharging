@@ -19,7 +19,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -136,7 +141,6 @@ public class VolleyRequest {
         return listaDadosCarros;
     }
     public static void loadCarros(){
-
         JsonArrayRequest postRequest = new JsonArrayRequest(URL_CARROS,new Response.Listener<JSONArray>(){
             @Override
             public void onResponse(JSONArray response) {
@@ -204,9 +208,58 @@ public class VolleyRequest {
         };
         queue.add(driverInfoRequest);
     }
-    public static void getDriverInfo(){
 
+    public static void sendBeingCharge(int bat,int carId,int plugId){
+        String beginDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+        Date date = new Date();
+        try {
+           date = format.parse(beginDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        String action = "begingCharge";
+        String url = URL_SEND_DRIVER+carId+"/action/"+action+"?access_token="+token;
+        Date finalDate = date;
+        StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject =  new JSONObject(response);
+                    Log.e("sendBeingCharge",jsonObject.getString("body"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("error",error.toString());
+            }
+        }){
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    String plug = "";
+                    if(plugId==0){plug = null;}else{plug = String.valueOf(plugId);}
+                    return new JSONObject()
+                            .put("batLevel",String.valueOf(bat))
+                            .put("plugId",plug)
+                            .put("beginDate", String.valueOf(finalDate.getTime()))
+                            .toString().getBytes();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+        queue.add(driverInfoRequest);
     }
+
     public static void loadPlug(){
         StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG,new Response.Listener<String>(){
             @Override
@@ -379,7 +432,10 @@ public class VolleyRequest {
           queue.add(postRequest);
 
   }
+    public static void sendTucsCarregar(int tomadaId,int batInicial,
+                                        int batFinal, int horaIncial, int horaFinal){
 
+    }
     public static String getToken() {
         return token;
     }
@@ -396,7 +452,5 @@ public class VolleyRequest {
         URL_PLUG = urlPlug;
     }
 
-    public static void sendViagemLogAndDeslocacaoLog(int viagemId,int deslocacaoId){
 
-    }
 }

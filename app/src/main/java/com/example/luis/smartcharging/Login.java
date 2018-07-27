@@ -6,8 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -44,6 +48,13 @@ public class Login extends AccountAuthenticatorActivity {
 
         EditText passwordED = (EditText) findViewById(R.id.password);
         password = passwordED.getText().toString();
+        ProgressBar progressBar = findViewById(R.id.pBar);
+        LinearLayout linearLayout = findViewById(R.id.linearLogin);
+        linearLayout.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+        if (progressBar.isShown()){
+         Log.e("coisa","coisa");
+        };
             VolleyRequest.getToken(user, password, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONArray result) {
@@ -53,29 +64,38 @@ public class Login extends AccountAuthenticatorActivity {
                 @Override
                 public void onSucess(JSONObject result) {
                     saveLoginInfo(result);
+                    progressBar.setVisibility(View.GONE);
+
                     changeToMyTuxis();
                 }
 
                 @Override
                 public void onFail(VolleyError error) {
+                    progressBar.setVisibility(View.GONE);
+                    linearLayout.setVisibility(View.VISIBLE);
                     if(error.networkResponse.statusCode == Unauthorized){
-                        Toast.makeText(getApplicationContext(),"Wrong password or email! Please try again",Toast.LENGTH_LONG);
+                        Toast.makeText(v.getContext(),"Wrong password or email! Please try again",Toast.LENGTH_LONG);
                     }
                 }
             });
     }
     public void saveLoginInfo(JSONObject loginInfo){
-        SharedPreferences sPref = getContext().getSharedPreferences("loginInfo",MODE_PRIVATE);
-        try {
-            JSONObject info = loginInfo;
-            SharedPreferences.Editor editor = sPref.edit();
-            editor.putString("token",info.getString("access_token"));
-            editor.putString("driverId",info.getString("driver_id"));
-            editor.putString("driverFirstName",info.getString("driver_first_name"));
-            editor.commit();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SharedPreferences sPref = getContext().getSharedPreferences("loginInfo",MODE_PRIVATE);
+                try {
+                    JSONObject info = loginInfo;
+                    SharedPreferences.Editor editor = sPref.edit();
+                    editor.putString("token",info.getString("access_token"));
+                    editor.putInt("driverId",info.getInt("driver_id"));
+                    editor.putString("driverFirstName",info.getString("driver_first_name"));
+                    editor.commit();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
     }
 

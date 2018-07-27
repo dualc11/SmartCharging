@@ -18,6 +18,7 @@ import static com.example.luis.smartcharging.BeingCharging.getTomadaId;
 import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
 import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
 import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
+import static com.example.luis.smartcharging.DBManager.getInfoCarregamento;
 import static com.example.luis.smartcharging.DBManager.getUltimoDeslocacaoId;
 import static com.example.luis.smartcharging.DBManager.getUltimoUlizacaoId;
 import static com.example.luis.smartcharging.DBManager.insertUtilizaçãoIdBateriaInicialData;
@@ -25,6 +26,7 @@ import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslo
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtilizacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
 import static com.example.luis.smartcharging.GpsService.getEmViagem;
+import static com.example.luis.smartcharging.VolleyRequest.sendBeingCharge;
 import static com.example.luis.smartcharging.VolleyRequest.sendPickUp;
 
 public class IntroduzirPerBat extends MyTukxis {
@@ -66,7 +68,7 @@ public class IntroduzirPerBat extends MyTukxis {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int i, boolean b)
                     {
-                        percentagemBat=i;
+                        percentagemBat = i;
                         percentagem.setText(""+percentagemBat);
                     }
 
@@ -196,8 +198,10 @@ public class IntroduzirPerBat extends MyTukxis {
             {
                 terminarUtilizacao();
             }
-            MyTukxis.getDb().colocaTucCarregar(percentagemBat, /*BeingCharging.getTucId()*/MyTukxis.getIdCarro(),
-                    getTomadaId(), MyTukxis.getUserId());
+            MyTukxis.getDb().colocaTucCarregar(percentagemBat,MyTukxis.getIdCarro(),
+                    getTomadaId(), String.valueOf(MyTukxis.getUserId()));
+            sendBeingCharge(percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
+            //SENDCARRGAR INFO AQUI
             Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
 
             if(getIntent().getIntExtra("viagem",0)!=1)
@@ -216,10 +220,13 @@ public class IntroduzirPerBat extends MyTukxis {
                 iniciarGps();
                 //iniciarViagem();
             }
-            boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat, /*BeingCharging.getTucId()*/MyTukxis.getIdCarro(),
+            boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
+                    getTomadaId());
+            getInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
                     getTomadaId());
             if(estado)
             {
+
                 Toast.makeText(this,"BeingCharging terminado",Toast.LENGTH_LONG).show();
 
             }

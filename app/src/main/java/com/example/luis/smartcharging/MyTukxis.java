@@ -65,10 +65,11 @@ public class MyTukxis extends AppCompatActivity {
     private static int idCarro;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
-    private static String userId;
+    private static int userId;
     private static Context context;
     private DrawerLayout dLayout;
     private Toolbar toolbar;
+    private static String userName;
     private static  ImageView imageView = null;
     private static boolean isCarsRefreshed = false;
     private static final int TIPOVIAGEM = 1;
@@ -80,8 +81,8 @@ public class MyTukxis extends AppCompatActivity {
         setContentView(R.layout.activity_my_tukxis);
         sharedPref = getSharedPreferences("loginInfo",Context.MODE_PRIVATE);
         editor = sharedPref.edit();
-        userId = sharedPref.getString("driverFirstName",null);
-
+        userName = sharedPref.getString("driverFirstName",null);
+        userId = Integer.parseInt(sharedPref.getString("driverId",null));
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
@@ -130,7 +131,7 @@ public class MyTukxis extends AppCompatActivity {
         dLayout = (DrawerLayout) findViewById(R.id.drawer_layout); // initiate a DrawerLayout
         NavigationView navView = (NavigationView) findViewById(R.id.navigation); // initiate a Navigation View
         Menu menu = navView.getMenu();
-        menu.getItem(0).setTitle(getUserId());
+        menu.getItem(0).setTitle(userName);
 
 
 
@@ -187,6 +188,10 @@ public class MyTukxis extends AppCompatActivity {
                     dLayout.closeDrawers();
                     Intent intent=new Intent(getApplicationContext(),CarsCharging.class);
                     startActivity(intent);
+                    return true;
+                } else if (itemId == R.id.stopCharging) {
+                    dLayout.closeDrawers();
+                    terminarCarregar();
                     return true;
                 }
                 else if (itemId == R.id.tucsDisponiveis) {
@@ -501,7 +506,7 @@ public class MyTukxis extends AppCompatActivity {
                 }
         );
     }
-
+/*
     //Para poder identificar os utilizador por exemplo no registo de kms que fez num dia
     public void registoUserId()
     {
@@ -544,7 +549,7 @@ public class MyTukxis extends AppCompatActivity {
         {
             return false;
         }
-    }
+    }*/
 
     public void alertaDefinicoes()
     {
@@ -588,7 +593,7 @@ public class MyTukxis extends AppCompatActivity {
 
     public void terminarCarregar()
     {
-        Intent intentCarregar=new Intent(MyTukxis.this,BeingCharging.class);
+        Intent intentCarregar = new Intent(MyTukxis.this,BeingCharging.class);
         intentCarregar.putExtra("opcaoCarregamento",2); //Para indicar que é para terminar carregamento
         //intentCarregar.putExtra("iniciarTerminar",1);
         startActivity(intentCarregar);
@@ -601,7 +606,7 @@ public class MyTukxis extends AppCompatActivity {
     }
 
     //Métodos getters
-    public static String getUserId() {return userId;}
+    public static int getUserId() {return userId;}
     public static DBManager getDb()
     {
         return db;
