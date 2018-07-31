@@ -31,7 +31,7 @@ public class FragmentToday extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_today, container, false);
-        listRegister=v.findViewById(R.id.registerList);
+        listRegister = v.findViewById(R.id.registerList);
 
         listAdapter = new RegisterListAdapter(this.getContext(), R.layout.register_info, DBManager.getRegister(1));
         listRegister.setAdapter(listAdapter);

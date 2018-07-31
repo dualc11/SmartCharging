@@ -17,6 +17,9 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
+import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
+
 public class BeingCharging extends MyTukxis {
 
     private IntentIntegrator qrScan;
@@ -34,7 +37,8 @@ public class BeingCharging extends MyTukxis {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_being_charging);
-
+        loadPlug();
+        loadCarros();
         qrScan = new IntentIntegrator(this);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
@@ -81,6 +85,7 @@ public class BeingCharging extends MyTukxis {
                     if(codigo == codigoTomda)
                     {
                         tomadaId = resultadoCodigo;
+
                         if(DBManager.existePulg(tomadaId)){
                             confirmacao("plug",tomadaId);
                         }else{

@@ -74,15 +74,13 @@ public class MyTukxis extends AppCompatActivity {
     private static boolean isCarsRefreshed = false;
     private static final int TIPOVIAGEM = 1;
     private static final int TIPOUTILIZACAO = 2;
+    private static boolean isToUpdateUserInfo = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_tukxis);
-        sharedPref = getSharedPreferences("loginInfo",Context.MODE_PRIVATE);
-        editor = sharedPref.edit();
-        userName = sharedPref.getString("driverFirstName",null);
-        userId = Integer.parseInt(sharedPref.getString("driverId",null));
+        updateUserInfo();
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
@@ -105,6 +103,21 @@ public class MyTukxis extends AppCompatActivity {
         db = DBManager.getDBManager();
         //intializing scan object
         qrScan = new IntentIntegrator(this);
+
+    }
+    public void updateUserInfo(){//Atualiza a informação sobre o utilizador(Nome do utilizador, id do utilizador)
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(isToUpdateUserInfo){
+                    sharedPref = getSharedPreferences("loginInfo",Context.MODE_PRIVATE);
+                    editor = sharedPref.edit();
+                    userName = sharedPref.getString("driverFirstName",null);
+                    userId = sharedPref.getInt("driverId",0);
+                    isToUpdateUserInfo = false;
+                }
+            }
+        }).start();
 
     }
     public void checkCars(){

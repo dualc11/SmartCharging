@@ -68,7 +68,7 @@ public class DBManager {
     private static final String BATERIAINICIAL="bateriaInicial";
     private static final String BATERIAFINAL="bateriaFinal";
     private static final String DISTANCIAKM="distanciaKm";
-    private static final String DATA="data";
+    private static final String DATA = "data";
     private static final String VIAGEM_ID = "id";
     private static final String CARROID="carroId";
     private static final String UTILIZAO_ID_VIAGEM = "utilizacaoId";
@@ -919,7 +919,7 @@ public class DBManager {
         }
         return carregamento;
     }
-    public synchronized boolean atualizaInfoCarregamento(int bateriaFim, int tucId,int tomadaId)
+    public static synchronized boolean atualizaInfoCarregamento(int bateriaFim, int tucId,int tomadaId)
     {
         String horaFim=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 
@@ -984,17 +984,17 @@ public class DBManager {
         ArrayList<RegisterInfo> registerInfo=new ArrayList<RegisterInfo>();
         Cursor c;
         boolean temRegistos;
-        RegisterInfo register=new RegisterInfo("Nr Carro","Nr Viagem","Km");
+        RegisterInfo register = new RegisterInfo("Nr Carro","Nr Viagem","Km");
         registerInfo.add(register);
 
         for(int nrDias=0;nrDias<nDias;nrDias++) {
             String dataViagem = convertData(nrDias);
-            temRegistos=false;
-            register=new RegisterInfo("",dataViagem,"");
+            temRegistos = false;
+            register = new RegisterInfo("",dataViagem,"");
             registerInfo.add(register);
 
-            c = db.rawQuery("SELECT " + VIAGEMID + "," + DISTANCIAKM + "," + CARROID +
-                    " FROM " + TABLE_VIAGEM_INFO + " WHERE " + DATA + "='" + dataViagem + "'", null);
+            c = db.rawQuery("SELECT " + ID_UTILIZACAO_CARRO + "," + DISTANCIAKM + "," + CARROID +
+                    " FROM " + TABELA_UTILIZACAO_CARRO + " WHERE " + DATA + "='" + dataViagem + "'", null);
             double kmsTotais = 0;
 
             while (c.moveToNext())
@@ -1043,7 +1043,19 @@ public class DBManager {
         data+=newDia;
         return data;
 
-    }
+    }/*
+    public static boolean existeTucCarregar(int tucId){
+        String[] col = new String[]{IDCARREGAMENTO};
+        Cursor cursor = db.query(TABELA_PLUG, col, TUCID+" = '" + TUCID + "' AND "+HORAFIM +" IS NULL",
+                null, null, null, null);
+
+        int size = cursor.getCount();
+        cursor.close();
+        if (size > 0) {
+            return true;
+        }
+        return false;
+    }*/
 
     public static synchronized boolean preencheMapa(GoogleMap map)
     {

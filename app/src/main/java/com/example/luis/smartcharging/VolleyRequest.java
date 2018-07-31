@@ -41,7 +41,7 @@ public class VolleyRequest {
     private static final String urlActionPickDrop="";
     private static final String URL_CARROS ="https://smile.prsma.com/tukxi/api/cars";
     private static String token = "";
-    private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token="+token;
+    private static String URL_PLUG = "https://smile.prsma.com/tukxi/api/plugs?access_token=";
     private static final String URL_SEND_DRIVER = "https://smile.prsma.com/tukxi/api/car/";
     private static boolean existToken = false;
     private static final String ACTION_BEGIN_CHARGE = "beginCharge";
@@ -269,7 +269,8 @@ public class VolleyRequest {
     }
 
     public static void loadPlug(){
-        StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG,new Response.Listener<String>(){
+
+        StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG+token,new Response.Listener<String>(){
             @Override
             public void onResponse(String responseString) {
                 try {
@@ -286,12 +287,7 @@ public class VolleyRequest {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                try {
-                    Log.e("coisa",URL_PLUG);
-                    String merda = new String(error.networkResponse.data,"utf-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                Log.e("coisa",URL_PLUG);
                 Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar as tomadas", Toast.LENGTH_LONG);
                 toast.show();
             }

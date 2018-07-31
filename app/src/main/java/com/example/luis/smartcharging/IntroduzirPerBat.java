@@ -15,6 +15,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import static com.example.luis.smartcharging.BeingCharging.getTomadaId;
+import static com.example.luis.smartcharging.DBManager.atualizaInfoCarregamento;
 import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
 import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
 import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
@@ -201,7 +202,6 @@ public class IntroduzirPerBat extends MyTukxis {
             MyTukxis.getDb().colocaTucCarregar(percentagemBat,MyTukxis.getIdCarro(),
                     getTomadaId(), String.valueOf(MyTukxis.getUserId()));
             sendChargeInfo(VolleyRequest.getActionBeginCharge(),percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
-            //SENDCARRGAR INFO AQUI
             Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
 
             if(getIntent().getIntExtra("viagem",0)!=1)
