@@ -49,6 +49,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 
+import static com.example.luis.smartcharging.BeingCharging.getTomadaId;
 import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
 import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
 import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
@@ -60,6 +61,7 @@ import static com.example.luis.smartcharging.DBManager.insertUtilizaçãoIdBater
 import static com.example.luis.smartcharging.DBManager.insertViagemIdBateriaInicialData;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
+import static com.example.luis.smartcharging.MyTukxis.getIdCarro;
 import static com.example.luis.smartcharging.VolleyRequest.postViagem;
 
 public class GpsService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -464,14 +466,14 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     public static void endTour(){//End tour and begin deslocacao
         emViagem =  false;
         if(insertDeslocaoIdBateriaInicialData(deslocacaoId,IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
-           deslocacaoId = getUltimoDeslocacaoId();
             try {
                 double kmViagem = calculaKmViagem(viagemId);
                 updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
-                postViagem(viagemId,deslocacaoId);//Send data to server(deslocacao log and viagem tour)
+                postViagem(viagemId,deslocacaoId,IntroduzirPerBat.getPercentagemBat(),getTomadaId(),getIdCarro());//Send data to server(deslocacao log and viagem tour)
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            deslocacaoId = getUltimoDeslocacaoId();
         }
     }
     public static void beginTour(){

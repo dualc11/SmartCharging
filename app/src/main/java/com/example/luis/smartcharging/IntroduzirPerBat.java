@@ -24,6 +24,7 @@ import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtili
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
 import static com.example.luis.smartcharging.GpsService.endTour;
 import static com.example.luis.smartcharging.GpsService.getEmViagem;
+import static com.example.luis.smartcharging.VolleyRequest.postViagem;
 import static com.example.luis.smartcharging.VolleyRequest.sendChargeInfo;
 import static com.example.luis.smartcharging.VolleyRequest.sendPickUp;
 
@@ -94,8 +95,7 @@ public class IntroduzirPerBat extends MyTukxis {
                 int idCarro=MyTukxis.getIdCarro();
                // enviaInfoWhatsapp(idCarro,"está a ser usado pelo");
                 startActivity(intentPrincipal);
-                foiParaWhatsapp=true;
-            }
+                            }
             else
             {
                 Toast.makeText(this,"Está a ser utilizado um carro",Toast.LENGTH_LONG).show();
@@ -134,46 +134,62 @@ public class IntroduzirPerBat extends MyTukxis {
 
     /*Método para parar finalizar a viagem*/
     public void terminarUtilizacao() throws JSONException {
-        if(percentagemBat!=0)
-        {
-            if (GpsService.getServicoIniciado())
-            {
-                stopService(MyTukxis.getIntentGps());
-                int idCarro=MyTukxis.getIdCarro();
-                //enviaInfoWhatsapp(idCarro,"deixou de ser usado pelo");
-                foiParaWhatsapp=true;
-                if(getEmViagem()){
-                    int viagemId = getIdViagemAnterior();
-                    double kmViagem = calculaKmViagem(viagemId);
-                    updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(percentagemBat!=0)
+                {
+                    if (GpsService.getServicoIniciado())
+                    {
+                        stopService(MyTukxis.getIntentGps());
+                        int idCarro=MyTukxis.getIdCarro();
+                        //enviaInfoWhatsapp(idCarro,"deixou de ser usado pelo");
+                        int viagemId = getIdViagemAnterior();
+                        int deslocacaoId =  getUltimoDeslocacaoId();
+                        if(getEmViagem()){
+                            double kmViagem = 0;
+                            try {
+                                kmViagem = calculaKmViagem(viagemId);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
 
-                    //End tour (Miss emViagem = false)
-                }else{
-                    int deslocacaoId =  getUltimoDeslocacaoId();
-                    double kmDeslocacao = calculaKmDeslocacao(deslocacaoId);
-                    updateKmBateriaFinalDeslocacao(kmDeslocacao,IntroduzirPerBat.getPercentagemBat(),deslocacaoId);
-                    //End deslocação(MIss emViagem = false)
-                }
-                double kmUtilizacao = -1f;
-                int ultimoUtilizacaoId = getUltimoUlizacaoId();
-                try {
-                    //kmViagem = DBManager.calculaKmViagem(viagemId);
-                    kmUtilizacao = DBManager.calculaKmUtilizacao(getUltimoUlizacaoId());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                updateKmBateriaFinalUtilizacao(kmUtilizacao,IntroduzirPerBat.getPercentagemBat(),ultimoUtilizacaoId);
+                            //End tour (Miss emViagem = false)
+                        }else{
 
+                            double kmDeslocacao = 0;
+                            try {
+                                kmDeslocacao = calculaKmDeslocacao(deslocacaoId);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            updateKmBateriaFinalDeslocacao(kmDeslocacao,IntroduzirPerBat.getPercentagemBat(),deslocacaoId);
+                            //End deslocação(MIss emViagem = false)
+                        }
+                        double kmUtilizacao = -1f;
+                        int ultimoUtilizacaoId = getUltimoUlizacaoId();
+                        try {
+                            //kmViagem = DBManager.calculaKmViagem(viagemId);
+                            kmUtilizacao = DBManager.calculaKmUtilizacao(getUltimoUlizacaoId());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        updateKmBateriaFinalUtilizacao(kmUtilizacao,IntroduzirPerBat.getPercentagemBat(),ultimoUtilizacaoId);
+                        postViagem(viagemId,deslocacaoId,getPercentagemBat(),getTomadaId(),getIdCarro());
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(),"Não está nenhuma viagem em curso!",Toast.LENGTH_LONG).show();
+                    }
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Por favor insira uma percentagem de bateria válida!",Toast.LENGTH_LONG).show();
+                }
             }
-            else
-            {
-                Toast.makeText(this,"Não está nenhuma viagem em curso!",Toast.LENGTH_LONG).show();
-            }
-        }
-        else
-        {
-            Toast.makeText(this,"Por favor insira uma percentagem de bateria válida!",Toast.LENGTH_LONG).show();
-        }
+        }).start();
+
     }
 
     public void confirmar() throws JSONException

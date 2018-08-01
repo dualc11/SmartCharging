@@ -156,69 +156,63 @@ public class MyTukxis extends AppCompatActivity {
                 //Fragment frag = null; // create a Fragment Object
                 int itemId = menuItem.getItemId(); // get selected menu item's id
                 // check selected menu item's id and replace a Fragment Accordingly
-                if(itemId==R.id.home)
-                {
-                    dLayout.closeDrawers();
-                    Intent intent= new Intent(getApplicationContext(),MyTukxis.class);
-                    startActivity(intent);
-                    return true;
-                }
-                else if (itemId == R.id.pickUp)
-                {
-                    dLayout.closeDrawers();
-                    iniciarServico();
-                    return true;
-                }
-                else if (itemId == R.id.dropOff)
-                {
-                    dLayout.closeDrawers();
-                    try {
-
-                        pararServico(2);//Receber um tipo de indica se é para parar a viagem ou utilizacao carro
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    return true;
-                }
-                else if (itemId == R.id.myTrip) {
-                    dLayout.closeDrawers();
-                    if(GpsService.getServicoIniciado()) {
-                        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                Intent intent;
+                switch (itemId){
+                    case R.id.home:
+                        dLayout.closeDrawers();
+                        intent= new Intent(getApplicationContext(),MyTukxis.class);
                         startActivity(intent);
-                    }
-                    else
-                    {
-                        Toast.makeText(getApplicationContext(),"Não está nenhuma viagem em curso",Toast.LENGTH_SHORT).show();
-                    }
-                    return true;
+                        return true;
+                    case R.id.pickUp:
+                        dLayout.closeDrawers();
+                        iniciarServico();
+                        return true;
+                    case R.id.dropOff:
+                        dLayout.closeDrawers();
+                        try {
+
+                            pararServico(2);//Receber um tipo de indica se é para parar a viagem ou utilizacao carro
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        return true;
+                    case R.id.myTrip:
+                        dLayout.closeDrawers();
+                        if(GpsService.getServicoIniciado()) {
+                            intent = new Intent(getApplicationContext(), MapsActivity.class);
+                            startActivity(intent);
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(),"Não está nenhuma viagem em curso",Toast.LENGTH_SHORT).show();
+                        }
+                        return true;
+                    case R.id.carregar:
+                        dLayout.closeDrawers();
+                        iniciarCarregamento();
+                        return true;
+                    case R.id.aCarregar:
+                        dLayout.closeDrawers();
+                        intent=new Intent(getApplicationContext(),CarsCharging.class);
+                        startActivity(intent);
+                        return true;
+                    case R.id.stopCharging:
+                        dLayout.closeDrawers();
+                        terminarCarregar();
+                        return true;
+                    case R.id.tucsDisponiveis:
+                        dLayout.closeDrawers();
+                        verTucsDisp();
+                        return true;
+                    case R.id.registoDiario:
+                        dLayout.closeDrawers();
+                         intent=new Intent(getApplicationContext(),Register.class);
+                        startActivity(intent);
+                        return true;
+                    default:
+                        return false;
                 }
-                else if (itemId == R.id.carregar) {
-                    dLayout.closeDrawers();
-                    iniciarCarregamento();
-                    return true;
-                }
-                else if (itemId == R.id.aCarregar) {
-                    dLayout.closeDrawers();
-                    Intent intent=new Intent(getApplicationContext(),CarsCharging.class);
-                    startActivity(intent);
-                    return true;
-                } else if (itemId == R.id.stopCharging) {
-                    dLayout.closeDrawers();
-                    terminarCarregar();
-                    return true;
-                }
-                else if (itemId == R.id.tucsDisponiveis) {
-                    dLayout.closeDrawers();
-                    verTucsDisp();
-                    return true;
-                }
-                else if (itemId == R.id.registoDiario) {
-                    dLayout.closeDrawers();
-                    Intent intent=new Intent(getApplicationContext(),Register.class);
-                    startActivity(intent);
-                    return true;
-                }
-                return false;
+
             }
         });
     }
@@ -267,7 +261,6 @@ public class MyTukxis extends AppCompatActivity {
 
     //Método para terminar uma rota
     public void pararServico(int tipo) throws JSONException {
-        if(tipo == TIPOUTILIZACAO){
             if(intent!=null)
             {
                 //Para não permitir o serviço ser parado antes de ser iniciado.
@@ -282,10 +275,6 @@ public class MyTukxis extends AppCompatActivity {
                 {
                     Toast.makeText(getApplicationContext(),"You are not using a car!",Toast.LENGTH_SHORT).show();
                 }
-            }
-            if(tipo == TIPOVIAGEM){
-
-            }
         }
     }
 

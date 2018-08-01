@@ -34,7 +34,7 @@ import static com.example.luis.smartcharging.MyTukxis.getContext;
 public class VolleyRequest {
 
     private static final RequestQueue queue = Volley.newRequestQueue(Login.getContext());
-    private static final String url="http://66.175.221.248:300/test";
+    private static final String url="http://10.2.214.229:3000";
     //private static final String url="http://10.2.0.70:3000/teste";
     //Para a conta
     private static final String urlCars="https://smile.prsma.com/tukxi/api/cars/status";
@@ -179,7 +179,7 @@ public class VolleyRequest {
 
     }
     public static void sendPickUp(int carId,int batLevel,int plugId){
-        String url = URL_SEND_DRIVER+carId+"/action/pickup?access_token="+token;
+        String url = URL_SEND_DRIVER+carId+"/action/pickup?access_token="+Login.getToken();
         StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -204,7 +204,7 @@ public class VolleyRequest {
             public byte[] getBody() throws AuthFailureError {
                 try {
                     String plug = "";
-                    if(plugId==0){plug = null;}else{plug = String.valueOf(plugId);}
+                    if(plugId==0){plug = "null";}else{plug = String.valueOf(plugId);}
                     return new JSONObject()
                             .put("batLevel",String.valueOf(batLevel))
                             .put("plugId",plug)
@@ -227,7 +227,8 @@ public class VolleyRequest {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        String url = URL_SEND_DRIVER+carId+"/action/"+action+"?access_token="+token;
+        String url = URL_SEND_DRIVER+carId+"/action/"+action+"?access_token="+Login.getToken();
+
         Date finalDate = date;
         StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -270,7 +271,7 @@ public class VolleyRequest {
 
     public static void loadPlug(){
 
-        StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG+token,new Response.Listener<String>(){
+        StringRequest postRequest = new StringRequest(Request.Method.GET,URL_PLUG+Login.getToken(),new Response.Listener<String>(){
             @Override
             public void onResponse(String responseString) {
                 try {
@@ -298,8 +299,8 @@ public class VolleyRequest {
         };
         queue.add(postRequest);
     }
-    public static void postViagem (int viagemId,int deslocacaoId){
-         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/1/action/pickup?access_token="+token
+    public static void postViagem (int viagemId,int deslocacaoId,int batLevel,int plugId,int carId){
+         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/"+carId+"/action/pickup?access_token="+Login.getToken()
                 ,
               new Response.Listener<String>()
               {
@@ -311,7 +312,7 @@ public class VolleyRequest {
                       try {
                           res = new JSONObject(response);
                           String body = res.getString("body");
-                          Log.e("res",body);
+                          Log.e("postViagem",body);
                       } catch (JSONException e) {
                           e.printStackTrace();
                       }
@@ -372,9 +373,13 @@ public class VolleyRequest {
              }
              try {
                  resultado.put("logDeslocacao",jsonArray);
+                 resultado.put("batLevel",batLevel);
+                 resultado.put("plugId",plugId);
              } catch (JSONException e) {
                  e.printStackTrace();
              }
+
+
              return resultado.toString().getBytes();
          }
 

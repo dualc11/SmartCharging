@@ -26,7 +26,7 @@ public class Login extends AccountAuthenticatorActivity {
     private static Context context;
     private String user;
     private String password;
-    private String token = "";
+    private static String token = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +56,7 @@ public class Login extends AccountAuthenticatorActivity {
          Log.e("coisa","coisa");
         };
             VolleyRequest.getToken(user, password, new VolleyCallback() {
+                //Funções responsaveis que ocorrem depois da resposta do servidor
                 @Override
                 public void onSuccess(JSONArray result) {
 
@@ -79,6 +80,7 @@ public class Login extends AccountAuthenticatorActivity {
                 }
             });
     }
+    //Guarda a informação do user(id, nome,token)
     public void saveLoginInfo(JSONObject loginInfo){
         new Thread(new Runnable() {
             @Override
@@ -105,4 +107,5 @@ public class Login extends AccountAuthenticatorActivity {
     }
 
     public static Context getContext(){return context;}
+    public static String getToken(){return token;}
 }
