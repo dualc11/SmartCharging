@@ -1043,62 +1043,73 @@ public class DBManager {
         data+=newDia;
         return data;
 
-    }/*
-    public static boolean existeTucCarregar(int tucId){
-        String[] col = new String[]{IDCARREGAMENTO};
-        Cursor cursor = db.query(TABELA_PLUG, col, TUCID+" = '" + TUCID + "' AND "+HORAFIM +" IS NULL",
+    }
+    public static synchronized ArrayList<GPSLogger> getLogViagemFromUtilizacao(int utilizacaoId){
+        ArrayList<GPSLogger> res = new ArrayList<>();
+        String[] col = new String[]{VIAGEM_ID};
+        Cursor cursor = db.query(TABLE_VIAGEM_INFO, col, UTILIZACAOID+" = '" + utilizacaoId+"'",
                 null, null, null, null);
 
-        int size = cursor.getCount();
-        cursor.close();
-        if (size > 0) {
-            return true;
+     while (cursor.moveToNext()){
+         ArrayList<GPSLogger> listaLogViagemFromViagem = getLogViagem(cursor.getInt(0));
+         res.addAll(listaLogViagemFromViagem);
+     }
+     return res;
+    }
+
+    public static synchronized ArrayList<GPSLogger> getDeslocacaoFromUtilizacao(int utilizacaoId){
+        ArrayList<GPSLogger> res = new ArrayList<>();
+        String[] col = new String[]{ID_DESLOCACAO};
+        Cursor cursor = db.query(TABLE_DESLOCACAO, col, UTILIZACAOID+" = '" + utilizacaoId+"'",
+                null, null, null, null);
+
+        while (cursor.moveToNext()){
+            ArrayList<GPSLogger> listaLogViagemFromDeslocacao = getLogDeslocacao(cursor.getInt(0));
+            res.addAll(listaLogViagemFromDeslocacao);
         }
-        return false;
-    }*/
+        return res;
+    }
 
-    public static synchronized boolean preencheMapa(GoogleMap map)
-    {
-        Cursor c;
+    public static synchronized boolean preencheMapa(GoogleMap map) {
         //Marker marker=null;
-        double longAtual=0,latAtual=0,longAntiga=0,latAntiga=0;
-        int i=0;
-        boolean temResultados=false;
+        double longAtual = 0, latAtual = 0, longAntiga = 0, latAntiga = 0;
+        int i = 0, utilizacaoId = 1; //getUltimoUlizacaoId();
+        boolean temResultados = false;
 
-        c = db.rawQuery("SELECT " + LONGITUDE +","+LATITUDE+" FROM "+TABLE_GPS_LOGGER+
-                " WHERE " +UTILIZACAOID+"="+GpsService.getIdViagem(), null);
+        ArrayList<GPSLogger> allLogs = getLogViagemFromUtilizacao(utilizacaoId);
+        allLogs.addAll(getDeslocacaoFromUtilizacao(utilizacaoId));
+        if (!allLogs.isEmpty()) {
+            for (int j = 0; j <allLogs.size(); j++) {
 
-        while (c.moveToNext())
-        {
-            if(map!=null)
-            {
-                longAntiga=longAtual;
-                latAntiga=latAtual;
-                longAtual=c.getDouble(0);
-                latAtual=c.getDouble(1);
-                if(longAtual!=0 && latAtual!=0) {
-                    // Add a marker in Sydney and move the camera
-                    LatLng coordenadas = new LatLng(latAtual, longAtual);
+                if (map != null) {
 
-                    if(marker!=null)
-                    {
-                        marker.remove();
+                    longAntiga = longAtual;
+                    latAntiga = latAtual;
+                    longAtual = allLogs.get(j).getLongitude();
+                    latAtual = allLogs.get(j).getLatitude();
+                    if (longAtual != 0 && latAtual != 0) {
+                        // Add a marker in Sydney and move the camera
+                        LatLng coordenadas = new LatLng(latAtual, longAtual);
+
+                        if (marker != null) {
+                            marker.remove();
+                        }
+                        marker = map.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
+
+                        if (i == 0) {
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
+                            //i++;
+                        }
+                        if (i >= 1) {
+                            Polyline line = map.addPolyline(new PolylineOptions()
+                                    .add(new LatLng(latAntiga, longAntiga), new LatLng(latAtual, longAtual))
+                                    .width(5)
+                                    .color(Color.RED));
+                        }
+                        i++;
                     }
-                    marker=map.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
-
-                    if(i==0) {
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
-                        //i++;
-                    }
-                    if(i>=1) {
-                        Polyline line = map.addPolyline(new PolylineOptions()
-                                .add(new LatLng(latAntiga, longAntiga), new LatLng(latAtual, longAtual))
-                                .width(5)
-                                .color(Color.RED));
-                    }
-                    i++;
+                    temResultados = true;
                 }
-                temResultados=true;
             }
         }
         return temResultados;
@@ -1176,9 +1187,8 @@ public class DBManager {
 
 
         String [] Select ={TABELA_LOG_VIAGEM+"."+ID_LOG_VIAGEM,TABELA_LOG_VIAGEM+"."+LONGITUDE,TABELA_LOG_VIAGEM+"."+ALTITUDE,
-                TABELA_LOG_VIAGEM+"."+DATAEHORA,TABELA_LOG_VIAGEM+"."+VIAGEMID/*,
-                TABELA_LOG_DESLOCACAO+"."+ID_LOG_DESLOCACAO,TABELA_LOG_DESLOCACAO+"."+LONGITUDE,TABELA_LOG_DESLOCACAO+"."+ALTITUDE,
-                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO,*/};
+                TABELA_LOG_VIAGEM+"."+DATAEHORA,TABELA_LOG_VIAGEM+"."+VIAGEMID,
+                TABELA_LOG_VIAGEM+"."+LATITUDE_LOG_VIAGEM};
         String From = TABELA_LOG_VIAGEM;
         String   Where = TABELA_LOG_VIAGEM+"."+VIAGEMID_LOG_VIAGEM+"=="+viagemId;
         Cursor clistaGpsLogger = db.query(From,Select,Where,null,null,null,null);
@@ -1198,6 +1208,7 @@ public class DBManager {
                 e.printStackTrace();
             }
             logViagem.setViagemId(clistaGpsLogger.getInt(4));
+            logViagem.setLatitude(clistaGpsLogger.getFloat(5));
             listaGpsLoggers.add(logViagem);
 
         }
@@ -1209,7 +1220,8 @@ public class DBManager {
 
 
         String [] Select ={TABELA_LOG_DESLOCACAO+"."+ID_LOG_DESLOCACAO,TABELA_LOG_DESLOCACAO+"."+LONGITUDE,TABELA_LOG_DESLOCACAO+"."+ALTITUDE,
-                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO,};
+                TABELA_LOG_DESLOCACAO+"."+DATAEHORA,TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO,
+                TABELA_LOG_DESLOCACAO+"."+LATITUDE_LOG_DESLOCACAO};
         String From = TABELA_LOG_DESLOCACAO;
         String   Where = TABELA_LOG_DESLOCACAO+"."+DESLOCACAOID_LOG_DESLOCACAO+"=="+deslocacaoId;
         Cursor clistaGpsLogger = db.query(From,Select,Where,null,null,null,null);
@@ -1229,6 +1241,7 @@ public class DBManager {
                 e.printStackTrace();
             }
             logDeslocacao.setViagemId(clistaGpsLogger.getInt(4));
+            logDeslocacao.setLatitude(clistaGpsLogger.getFloat(5));
             listaGpsLoggers.add(logDeslocacao);
 
         }

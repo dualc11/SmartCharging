@@ -85,7 +85,7 @@ public class MyTukxis extends AppCompatActivity {
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
-
+        loadCarros();
         intent = new Intent(this, GpsService.class);
 
         //Verifica as permissões - não avança até que todas as permissões forem cedidas

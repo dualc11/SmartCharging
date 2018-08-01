@@ -2,7 +2,6 @@ package com.example.luis.smartcharging;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -15,17 +14,15 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import static com.example.luis.smartcharging.BeingCharging.getTomadaId;
-import static com.example.luis.smartcharging.DBManager.atualizaInfoCarregamento;
 import static com.example.luis.smartcharging.DBManager.calculaKmDeslocacao;
 import static com.example.luis.smartcharging.DBManager.calculaKmViagem;
 import static com.example.luis.smartcharging.DBManager.getIdViagemAnterior;
-import static com.example.luis.smartcharging.DBManager.getInfoCarregamento;
 import static com.example.luis.smartcharging.DBManager.getUltimoDeslocacaoId;
 import static com.example.luis.smartcharging.DBManager.getUltimoUlizacaoId;
-import static com.example.luis.smartcharging.DBManager.insertUtilizaçãoIdBateriaInicialData;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtilizacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
+import static com.example.luis.smartcharging.GpsService.endTour;
 import static com.example.luis.smartcharging.GpsService.getEmViagem;
 import static com.example.luis.smartcharging.VolleyRequest.sendChargeInfo;
 import static com.example.luis.smartcharging.VolleyRequest.sendPickUp;
@@ -49,7 +46,7 @@ public class IntroduzirPerBat extends MyTukxis {
         setContentView(R.layout.activity_seek_bar);
         view = LayoutInflater.from(IntroduzirPerBat.this).inflate(R.layout.seekbar,null);
         seekBarTouch();
-        intentPrincipal=new Intent(IntroduzirPerBat.this,MapsActivity.class);
+        intentPrincipal = new Intent(IntroduzirPerBat.this,MapsActivity.class);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
@@ -61,8 +58,8 @@ public class IntroduzirPerBat extends MyTukxis {
     /*Método para controlar a percentagem de bateria que o user põe na IntroduzirPerBat*/
     public void seekBarTouch()
     {
-        seekBar=view.findViewById(R.id.seek_bar1);
-        percentagem=view.findViewById(R.id.percentagem);
+        seekBar = view.findViewById(R.id.seek_bar1);
+        percentagem = view.findViewById(R.id.percentagem);
         seekBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     int progress;
@@ -95,7 +92,8 @@ public class IntroduzirPerBat extends MyTukxis {
 
                 //int idCarro=getIntent().getIntExtra("idCarro",0);
                 int idCarro=MyTukxis.getIdCarro();
-                enviaInfoWhatsapp(idCarro,"está a ser usado pelo");
+               // enviaInfoWhatsapp(idCarro,"está a ser usado pelo");
+                startActivity(intentPrincipal);
                 foiParaWhatsapp=true;
             }
             else
@@ -142,7 +140,7 @@ public class IntroduzirPerBat extends MyTukxis {
             {
                 stopService(MyTukxis.getIntentGps());
                 int idCarro=MyTukxis.getIdCarro();
-                enviaInfoWhatsapp(idCarro,"deixou de ser usado pelo");
+                //enviaInfoWhatsapp(idCarro,"deixou de ser usado pelo");
                 foiParaWhatsapp=true;
                 if(getEmViagem()){
                     int viagemId = getIdViagemAnterior();
@@ -180,65 +178,72 @@ public class IntroduzirPerBat extends MyTukxis {
 
     public void confirmar() throws JSONException
     {
-        //Caso seja para iniciar viagem
-        if(getIntent().getIntExtra("opcao",0)==0)
-        {
-            sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
-            iniciarGps();
-           // iniciarViagem();
-        }
-        //Caso seja para terminar viagem
-        else if(getIntent().getIntExtra("opcao",0)==OPCAO_VIAGEM_DECORRER)
-        {
-            terminarUtilizacao();
-        }
-        //Caso seja para inicar carregamento
-        else if(getIntent().getIntExtra("opcao",0)==2)
-        {
-            if(getIntent().getIntExtra("viagem",0)==1)
-            {
-                terminarUtilizacao();
-            }
-            MyTukxis.getDb().colocaTucCarregar(percentagemBat,MyTukxis.getIdCarro(),
-                    getTomadaId(), String.valueOf(MyTukxis.getUserId()));
-            sendChargeInfo(VolleyRequest.getActionBeginCharge(),percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
-            Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
-
-            if(getIntent().getIntExtra("viagem",0)!=1)
-            {
-                Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
-                startActivity(intentPrincipal);
-                //this.finish();
-            }
-        }
-        //Caso seja para terminar carregamento
-        else if(getIntent().getIntExtra("opcao",0)==3)
-        {
-            if(getIntent().getIntExtra("viagem",0)==2)
+        if(getIntent().getIntExtra("endTour",0)==1){//Caso seja para acabar uma viagem
+            endTour();
+            Intent intent = new Intent(this,MapsActivity.class);
+            startActivity(intent);
+        }else{
+            if(getIntent().getIntExtra("opcao",0)==0)
             {
                 sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
                 iniciarGps();
-                //iniciarViagem();
+                // iniciarViagem();
             }
-            boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
-                    getTomadaId());
-            sendChargeInfo(VolleyRequest.getActionStopCharge(),percentagemBat,getIdCarro(),getTomadaId());
-            if(estado)
+            //Caso seja para terminar utilização
+            else if(getIntent().getIntExtra("opcao",0)==OPCAO_VIAGEM_DECORRER)
             {
-
-                Toast.makeText(this,"BeingCharging terminado",Toast.LENGTH_LONG).show();
-
+                terminarUtilizacao();
             }
-            else {
-                Toast.makeText(this, "Não existia nenhum carregamento correspondente!", Toast.LENGTH_LONG).show();
-            }
-            if(getIntent().getIntExtra("viagem",0)!=2)
+            //Caso seja para inicar carregamento e terminar utilização
+            else if(getIntent().getIntExtra("opcao",0)==2)
             {
-                Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
-                startActivity(intentPrincipal);
-                //this.finish();
+                if(getIntent().getIntExtra("viagem",0)==1)
+                {
+                    terminarUtilizacao();
+                }
+                MyTukxis.getDb().colocaTucCarregar(percentagemBat,MyTukxis.getIdCarro(),
+                        getTomadaId(), String.valueOf(MyTukxis.getUserId()));
+                sendChargeInfo(VolleyRequest.getActionBeginCharge(),percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
+                Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
+
+                if(getIntent().getIntExtra("viagem",0)!=1)
+                {
+                    Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
+                    startActivity(intentPrincipal);
+                    //this.finish();
+                }
+            }
+            //Caso seja para terminar carregamento
+            else if(getIntent().getIntExtra("opcao",0)==3)
+            {
+                if(getIntent().getIntExtra("viagem",0)==2)
+                {
+                    sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
+                    iniciarGps();
+                    //iniciarViagem();
+                }
+                boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
+                        getTomadaId());
+                sendChargeInfo(VolleyRequest.getActionStopCharge(),percentagemBat,getIdCarro(),getTomadaId());
+                if(estado)
+                {
+
+                    Toast.makeText(this,"BeingCharging terminado",Toast.LENGTH_LONG).show();
+
+                }
+                else {
+                    Toast.makeText(this, "Não existia nenhum carregamento correspondente!", Toast.LENGTH_LONG).show();
+                }
+                if(getIntent().getIntExtra("viagem",0)!=2)
+                {
+                    Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
+                    startActivity(intentPrincipal);
+                    //this.finish();
+                }
             }
         }
+        //Caso seja para iniciar viagem
+
     }
 
     public void percentagemBateria()

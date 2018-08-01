@@ -12,8 +12,26 @@ public class GPSLogger {
     float altitude;
     Date data;
     int viagemId;
+    float latitude;
 
     public GPSLogger() {
+    }
+
+    public GPSLogger(int id, float longitude, float altitude, Date data, int viagemId, float latitude) {
+        this.id = id;
+        this.longitude = longitude;
+        this.altitude = altitude;
+        this.data = data;
+        this.viagemId = viagemId;
+        this.latitude = latitude;
+    }
+
+    public float getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
     }
 
     public GPSLogger(int id, float longitude, float altitude, Date data, int viagemId) {

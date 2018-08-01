@@ -119,7 +119,7 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
                                 agora a última coordenada é a do marker que está no mapa e a próxima é a que
                                 o sinal de GPS apanhar*/
                                 if(i==0 && mapaPreenchido) {
-                                    marker=DBManager.getMarker();
+                                    marker = DBManager.getMarker();
                                     LatLng position = marker.getPosition();
                                     latAntiga = position.latitude;
                                     longAntiga = position.longitude;
@@ -128,8 +128,8 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
                                 }
                                 /*Caso não tenha coordenadas da viagem atual na base de dados*/
                                 else if(i==0 && !mapaPreenchido){
-                                    longAntiga=longAtual;
-                                    latAntiga=latAtual;
+                                    longAntiga = longAtual;
+                                    latAntiga = latAtual;
                                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordenadas, 17));
                                 }
                                 //removemos o marker antigo para colocar o novo
@@ -138,7 +138,7 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
                                     marker.remove();
                                 }
                                 //Adicionamos o marker ao mapa
-                                marker=mMap.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
+                                marker = mMap.addMarker(new MarkerOptions().position(coordenadas).title("Madeira"));
 
                                     //Desenhamos uma linha entre a coordenada anterior e a atual/nova
                                     Polyline line = mMap.addPolyline(new PolylineOptions()
@@ -177,7 +177,7 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mapaPreenchido= DBManager.preencheMapa(mMap);
+        mapaPreenchido = DBManager.preencheMapa(mMap);
     }
     public void terminarViagem(View v) throws JSONException {
         pararServico(1);
@@ -185,7 +185,10 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
 
     public void isOnTour (View v){
         if(getEmViagem()){
-            endTour();
+            Intent intent = new Intent(this,IntroduzirPerBat.class);
+            intent.putExtra("endTour",1);
+            startActivity(intent);
+            //endTour();
             TextView text = (TextView)v.findViewById(R.id.btnTour);
             text.setText("Start the tour");
 
