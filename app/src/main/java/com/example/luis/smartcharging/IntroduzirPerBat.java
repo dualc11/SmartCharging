@@ -22,6 +22,7 @@ import static com.example.luis.smartcharging.DBManager.getUltimoUlizacaoId;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslocacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalUtilizacao;
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
+import static com.example.luis.smartcharging.GpsService.beginTour;
 import static com.example.luis.smartcharging.GpsService.endTour;
 import static com.example.luis.smartcharging.GpsService.getEmViagem;
 import static com.example.luis.smartcharging.VolleyRequest.postViagem;
@@ -192,74 +193,69 @@ public class IntroduzirPerBat extends MyTukxis {
 
     }
 
-    public void confirmar() throws JSONException
-    {
-        if(getIntent().getIntExtra("endTour",0)==1){//Caso seja para acabar uma viagem
-            endTour();
-            Intent intent = new Intent(this,MapsActivity.class);
+    public void confirmar() throws JSONException {
+        if (getIntent().getIntExtra("beginTour", 0) == 1) {//Caso seja para cpmeçar uma viagem
+            beginTour();
+            Intent intent = new Intent(this, MapsActivity.class);
+            intent.putExtra("endTour",1);
             startActivity(intent);
-        }else{
-            if(getIntent().getIntExtra("opcao",0)==0)
-            {
-                sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
-                iniciarGps();
-                // iniciarViagem();
-            }
-            //Caso seja para terminar utilização
-            else if(getIntent().getIntExtra("opcao",0)==OPCAO_VIAGEM_DECORRER)
-            {
-                terminarUtilizacao();
-            }
-            //Caso seja para inicar carregamento e terminar utilização
-            else if(getIntent().getIntExtra("opcao",0)==2)
-            {
-                if(getIntent().getIntExtra("viagem",0)==1)
-                {
+            }else{
+            if (getIntent().getIntExtra("endTour", 0) == 1) {//Caso seja para acabar uma viagem
+                endTour();
+                Intent intent = new Intent(this, MapsActivity.class);
+                intent.putExtra("startTour",1);
+                startActivity(intent);
+            } else {
+                if (getIntent().getIntExtra("opcao", 0) == 0) {
+                    sendPickUp(getIdCarro(), getPercentagemBat(), getTomadaId());
+                    iniciarGps();
+                    // iniciarViagem();
+                }
+                //Caso seja para terminar utilização
+                else if (getIntent().getIntExtra("opcao", 0) == OPCAO_VIAGEM_DECORRER) {
                     terminarUtilizacao();
                 }
-                MyTukxis.getDb().colocaTucCarregar(percentagemBat,MyTukxis.getIdCarro(),
-                        getTomadaId(), String.valueOf(MyTukxis.getUserId()));
-                sendChargeInfo(VolleyRequest.getActionBeginCharge(),percentagemBat,MyTukxis.getIdCarro(),getTomadaId());
-                Toast.makeText(this,"BeingCharging iniciado",Toast.LENGTH_LONG).show();
+                //Caso seja para inicar carregamento e terminar utilização
+                else if (getIntent().getIntExtra("opcao", 0) == 2) {
+                    if (getIntent().getIntExtra("viagem", 0) == 1) {
+                        terminarUtilizacao();
+                    }
+                    MyTukxis.getDb().colocaTucCarregar(percentagemBat, MyTukxis.getIdCarro(),
+                            getTomadaId(), String.valueOf(MyTukxis.getUserId()));
+                    sendChargeInfo(VolleyRequest.getActionBeginCharge(), percentagemBat, MyTukxis.getIdCarro(), getTomadaId());
+                    Toast.makeText(this, "BeingCharging iniciado", Toast.LENGTH_LONG).show();
 
-                if(getIntent().getIntExtra("viagem",0)!=1)
-                {
-                    Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
-                    startActivity(intentPrincipal);
-                    //this.finish();
+                    if (getIntent().getIntExtra("viagem", 0) != 1) {
+                        Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
+                        startActivity(intentPrincipal);
+                        //this.finish();
+                    }
                 }
-            }
-            //Caso seja para terminar carregamento
-            else if(getIntent().getIntExtra("opcao",0)==3)
-            {
-                if(getIntent().getIntExtra("viagem",0)==2)
-                {
-                    sendPickUp(getIdCarro(),getPercentagemBat(),getTomadaId());
-                    iniciarGps();
-                    //iniciarViagem();
-                }
-                boolean estado= MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat,MyTukxis.getIdCarro(),
-                        getTomadaId());
-                sendChargeInfo(VolleyRequest.getActionStopCharge(),percentagemBat,getIdCarro(),getTomadaId());
-                if(estado)
-                {
+                //Caso seja para terminar carregamento
+                else if (getIntent().getIntExtra("opcao", 0) == 3) {
+                    if (getIntent().getIntExtra("viagem", 0) == 2) {
+                        sendPickUp(getIdCarro(), getPercentagemBat(), getTomadaId());
+                        iniciarGps();
+                        //iniciarViagem();
+                    }
+                    boolean estado = MyTukxis.getDb().atualizaInfoCarregamento(percentagemBat, MyTukxis.getIdCarro(),
+                            getTomadaId());//Verifica se existe algum carregamento desse tipo
 
-                    Toast.makeText(this,"BeingCharging terminado",Toast.LENGTH_LONG).show();
+                    if (estado) {
+                        sendChargeInfo(VolleyRequest.getActionStopCharge(), percentagemBat, getIdCarro(), getTomadaId());
+                        Toast.makeText(this, "BeingCharging terminado", Toast.LENGTH_LONG).show();
 
-                }
-                else {
-                    Toast.makeText(this, "Não existia nenhum carregamento correspondente!", Toast.LENGTH_LONG).show();
-                }
-                if(getIntent().getIntExtra("viagem",0)!=2)
-                {
-                    Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
-                    startActivity(intentPrincipal);
-                    //this.finish();
+                    } else {
+                        Toast.makeText(this, "Não existia nenhum carregamento correspondente!", Toast.LENGTH_LONG).show();
+                    }
+                    if (getIntent().getIntExtra("viagem", 0) != 2) {
+                        Intent intentPrincipal = new Intent(IntroduzirPerBat.this, MyTukxis.class);
+                        startActivity(intentPrincipal);
+                        //this.finish();
+                    }
                 }
             }
         }
-        //Caso seja para iniciar viagem
-
     }
 
     public void percentagemBateria()

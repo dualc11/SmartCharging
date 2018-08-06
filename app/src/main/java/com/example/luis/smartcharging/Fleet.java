@@ -51,8 +51,8 @@ public class Fleet extends MyTukxis {
             public void onSuccess(JSONArray result) {
                 //Informação dos dados do carro
                 String idTuc;
-                int available = -1;
-                int charging = -1;
+                String available = "false";
+                String charging = "false";
                 String bars = "70";
                 DadosFleet dadosCarro;
 
@@ -61,9 +61,9 @@ public class Fleet extends MyTukxis {
                         JSONObject carro = result.getJSONObject(i);
                         idTuc = carro.getString("id");
                         if(carro.getString("available").compareTo("null") != 0)
-                            available = carro.getInt("available");
+                            available = carro.getString("available");
                         if(carro.getString("charging").compareTo("null") != 0)
-                            charging = carro.getInt("charging");
+                            charging = carro.getString("charging");
                         dadosCarro = new DadosFleet(idTuc,available,charging,bars);
                         fleets.add(dadosCarro);
 

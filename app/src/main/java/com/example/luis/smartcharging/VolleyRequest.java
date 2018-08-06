@@ -13,6 +13,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.luis.sampledata.LogInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.example.luis.smartcharging.DBManager.*;
 import static com.example.luis.smartcharging.MyTukxis.getContext;
 
 public class VolleyRequest {
@@ -135,7 +137,7 @@ public class VolleyRequest {
 
     public static ArrayList<DadosFleet> getCarsStatus(final VolleyCallback callback){
         ArrayList<DadosFleet> listaDadosCarros = new ArrayList<>();
-        JsonArrayRequest postRequest = new JsonArrayRequest(urlCars,new Response.Listener<JSONArray>(){
+        JsonArrayRequest postRequest = new JsonArrayRequest(urlCars+"?access_token="+Login.getToken(),new Response.Listener<JSONArray>(){
             @Override
             public void onResponse(JSONArray response) {
                 callback.onSuccess(response);
@@ -150,7 +152,7 @@ public class VolleyRequest {
         return listaDadosCarros;
     }
     public static void loadCarros(){
-        JsonArrayRequest postRequest = new JsonArrayRequest(URL_CARROS,new Response.Listener<JSONArray>(){
+        JsonArrayRequest postRequest = new JsonArrayRequest(URL_CARROS+"?access_token="+Login.getToken(),new Response.Listener<JSONArray>(){
             @Override
             public void onResponse(JSONArray response) {
                 int id;
@@ -176,8 +178,8 @@ public class VolleyRequest {
             }
         });
         queue.add(postRequest);
-
     }
+
     public static void sendPickUp(int carId,int batLevel,int plugId){
         String url = URL_SEND_DRIVER+carId+"/action/pickup?access_token="+Login.getToken();
         StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -288,7 +290,7 @@ public class VolleyRequest {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("coisa",URL_PLUG);
+                Log.e("coisa",URL_PLUG+Login.getToken());
                 Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar as tomadas", Toast.LENGTH_LONG);
                 toast.show();
             }
@@ -335,52 +337,44 @@ public class VolleyRequest {
              String res = "";
              ArrayList<GPSLogger> listaGPSLogger = DBManager.getLogViagem(viagemId);
              ArrayList<GPSLogger> listaGpsDeslocacao = DBManager.getLogDeslocacao(deslocacaoId);
-             JSONObject resultado = new JSONObject();
+             JSONObject resultado = new JSONObject(),tour = new JSONObject(),deslocacao = new JSONObject();
              JSONArray jsonArray = new JSONArray();
+             try {
              for (int i = 0;i<listaGPSLogger.size();i++){
                  JSONObject jsonObject = new JSONObject();
-                 try {
+
                      jsonObject.put("altitude", Float.toString(listaGPSLogger.get(i).getAltitude()));
                      jsonObject.put("longitude", Float.toString(listaGPSLogger.get(i).getLongitude()));
                      jsonObject.put("latitude",Float.toString(listaGPSLogger.get(i).getAltitude()));
                      jsonObject.put("data", Long.toString(listaGPSLogger.get(i).getData().getTime()));
-
                      jsonArray.put(jsonObject);
 
-                 } catch (JSONException e) {
-                     e.printStackTrace();
-                 }
-             }
-             try {
-                 resultado.put("logRota",jsonArray);
-             } catch (JSONException e) {
-                 e.printStackTrace();
-             }
 
-             for (int i = 0;i<listaGpsDeslocacao.size();i++){
-                 JSONObject jsonObject = new JSONObject();
-                 try {
+                 }
+                 LogInfo viagem = getViagem(viagemId);
+                 tour.put("batInit",viagem.getBatInicial());
+                 tour.put("batFinal",viagem.getBatFinal());
+                 tour.put("logTour",jsonArray);
+
+                 for (int i = 0;i<listaGpsDeslocacao.size();i++){
+                     JSONObject jsonObject = new JSONObject();
                      jsonObject.put("altitude", Float.toString(listaGpsDeslocacao.get(i).getAltitude()));
                      jsonObject.put("longitude", Float.toString(listaGpsDeslocacao.get(i).getLongitude()));
                      jsonObject.put("latitude",Float.toString(listaGpsDeslocacao.get(i).getAltitude()));
                      jsonObject.put("data", Long.toString(listaGpsDeslocacao.get(i).getData().getTime()));
-
                      jsonArray.put(jsonObject);
-
-                 } catch (JSONException e) {
-                     e.printStackTrace();
                  }
-             }
-             try {
-                 resultado.put("logDeslocacao",jsonArray);
-                 resultado.put("batLevel",batLevel);
-                 resultado.put("plugId",plugId);
-             } catch (JSONException e) {
+                 LogInfo deslocacao_ = getDeslocacao(deslocacaoId);
+                 deslocacao.put("batInit",deslocacao_.getBatInicial());
+                 deslocacao.put("batFinal",deslocacao_.getBatFinal());
+                 deslocacao.put("logDeslocacao",jsonArray);
+
+                 resultado.put("rota",tour);
+                 resultado.put("deslocacao",deslocacao);
+             }catch (JSONException e) {
                  e.printStackTrace();
              }
-
-
-             return resultado.toString().getBytes();
+          return resultado.toString().getBytes();
          }
 
              @Override

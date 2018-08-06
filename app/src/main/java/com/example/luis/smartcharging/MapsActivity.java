@@ -67,7 +67,7 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         getSupportActionBar().setTitle("Current tour");
         navigationClick(toolbar);
 
-        listaMyTrip=findViewById(R.id.listaMyTrip);
+        listaMyTrip= findViewById(R.id.listaMyTrip);
         myTripInfo =new ArrayList<String>();
         if(getIntent().hasExtra("percurso")){
            percursoSelacionado = (Percurso) getIntent().getParcelableExtra("percurso");
@@ -76,8 +76,18 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         i=0;
         mapaPreenchido=false;
         startTimer();
+        checkStartOrEnd();
     }
-
+    public void checkStartOrEnd(){
+        if (getIntent().getIntExtra("startTour", 0) == 1){
+            TextView text = (TextView)findViewById(R.id.btnTour);
+            text.setText("START THE TOUR");
+        }
+        if(getIntent().getIntExtra("endTour", 0) == 1){
+            TextView text = (TextView)findViewById(R.id.btnTour);
+            text.setText("END THE TOUR");
+        }
+    }
     public void startTimer() {
         //Cria o timer
         timer = new Timer();
@@ -183,17 +193,18 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         pararServico(1);
     }
 
-    public void isOnTour (View v){
+    public void isOnTour (View v){//
         if(getEmViagem()){
-            Intent intent = new Intent(this,IntroduzirPerBat.class);
+            Intent intent = new Intent(this,IntroduzirPerBat.class);//Responsável por pedir a bateria
             intent.putExtra("endTour",1);
             startActivity(intent);
-            //endTour();
             TextView text = (TextView)v.findViewById(R.id.btnTour);
             text.setText("Start the tour");
-
         }else{
-            beginTour();
+            Intent intent = new Intent(this,IntroduzirPerBat.class);
+            intent.putExtra("beginTour",1);
+            startActivity(intent);
+            //beginTour();
             TextView text = (TextView)v.findViewById(R.id.btnTour);
             text.setText("End the tour");
 

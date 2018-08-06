@@ -44,14 +44,14 @@ public class FleetListAdapter extends ArrayAdapter<DadosFleet> {
     }
     public String escolheEstado(DadosFleet dadosCarro){
         String estado = "-";//Caso ocorrer algum erro
-        if(dadosCarro.getAvailable()==1){
-            if(dadosCarro.getCharging()==1){
+        if(dadosCarro.getAvailable().compareTo("true")==0){
+            if(dadosCarro.getCharging().compareTo("true")==0){
                 estado = "Availabe(Charging)";
             }else{
                 estado = "Availabe(Not charging)";
             }
         }else{//Not availabe
-            if(dadosCarro.getCharging()==1){
+            if(dadosCarro.getCharging().compareTo("true")==0){
                 estado = "Not availabe(Charging)";
             }else {
                 estado = "Not availabe(Not charging)";

@@ -46,15 +46,9 @@ import com.squareup.picasso.Target;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import static com.example.luis.smartcharging.DBManager.calculaKmUtilizacao;
-import static com.example.luis.smartcharging.DBManager.getLogDeslocacao;
-import static com.example.luis.smartcharging.DBManager.getLogViagem;
-import static com.example.luis.smartcharging.VolleyRequest.getToken;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
-import static com.example.luis.smartcharging.VolleyRequest.postViagem;
 
 public class MyTukxis extends AppCompatActivity {
 
@@ -75,7 +69,7 @@ public class MyTukxis extends AppCompatActivity {
     private static final int TIPOVIAGEM = 1;
     private static final int TIPOUTILIZACAO = 2;
     private static boolean isToUpdateUserInfo = true;
-
+    private static final int SLEEPTIME = 60000*60*5;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +79,7 @@ public class MyTukxis extends AppCompatActivity {
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
-        loadCarros();
+        refreshCarsAndPlug();
         intent = new Intent(this, GpsService.class);
 
         //Verifica as permissões - não avança até que todas as permissões forem cedidas
@@ -383,7 +377,7 @@ public class MyTukxis extends AppCompatActivity {
         {
             runOnUiThread(()->
                     {
-                        final int finalIndex =Integer.parseInt(value);
+                        final int finalIndex = Integer.parseInt(value);
                         if (!isFinishing())
                         {
                            new AlertDialog.Builder(MyTukxis.this)
@@ -623,6 +617,19 @@ public class MyTukxis extends AppCompatActivity {
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         getSupportActionBar().setTitle("Tours menu");
         navigationClick(toolbar);
+    }
+    public static void refreshCarsAndPlug(){
+        new Thread(() -> {
+            while (true){
+                loadCarros();
+                loadPlug();
+                try {
+                    Thread.sleep(SLEEPTIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
 }

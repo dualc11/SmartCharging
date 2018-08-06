@@ -3,11 +3,11 @@ package com.example.luis.smartcharging;
 public class DadosFleet {
 
     private String idTuc;
-    private int available;
-    private int charging;
+    private String available;
+    private String charging;
     private String bars;
 
-    public DadosFleet(String idTuc,int available, int charging,String bars)
+    public DadosFleet(String idTuc,String available, String charging,String bars)
     {
         this.idTuc=idTuc;
         this.available = available;
@@ -23,19 +23,19 @@ public class DadosFleet {
         this.idTuc = idTuc;
     }
 
-    public int getAvailable() {
+    public String getAvailable() {
         return available;
     }
 
-    public void setAvailable(int available) {
+    public void setAvailable(String available) {
         this.available = available;
     }
 
-    public int getCharging() {
+    public String getCharging() {
         return charging;
     }
 
-    public void setCharging(int charging) {
+    public void setCharging(String charging) {
         this.charging = charging;
     }
 

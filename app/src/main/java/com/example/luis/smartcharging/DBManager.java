@@ -15,6 +15,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.luis.sampledata.LogInfo;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -36,6 +37,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DBManager {
+    private  static final int TYPE_VIAGEM = 1;
+    private  static final int TYPE_DESLOCACAO = 2;
 
     private static final String MODULE = "Db Manager";
 
@@ -455,7 +458,7 @@ public class DBManager {
     /*Método para quando é iniciada uma viagem guardar o id dessa viagem que se vai iniciar
     * e também guardar a percentagem de bateria antes da viagem começar*/
     public static synchronized boolean insertUtilizaçãoIdBateriaInicialData(int bateriaInicial,int carroId){
-        String data=new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        String data = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
         boolean res = false;
         db.beginTransaction();
@@ -735,11 +738,9 @@ public class DBManager {
     }
 
     public synchronized boolean apagaInfoUtilizacao(int utilizacaoId){
-
         SQLiteStatement stm = null;
         boolean res=false;
         db.beginTransaction();
-
         try{
 
             String sql="";
@@ -928,9 +929,7 @@ public class DBManager {
         db.beginTransaction();
 
         try{
-
             String sql="";
-
             sql="UPDATE "+TABLE_CARREGAMENTOS+" SET "+HORAFIM+"='"+horaFim+"',"+BATERIAFINAL+"="+bateriaFim+
                     " WHERE "+TUCID+"="+tucId+
                     " AND "+TOMADAID+"="+tomadaId+" AND "+HORAFIM+" IS NULL";
@@ -1004,16 +1003,16 @@ public class DBManager {
                 String distancia = Double.toString(c.getDouble(1));
                 String carroId = Integer.toString(c.getInt(2));
 
-                register=new RegisterInfo(carroId,viagemId,distancia);
+                register = new RegisterInfo(carroId,viagemId,distancia);
                 registerInfo.add(register);
                 temRegistos=true;
             }
             if(!temRegistos)
             {
-                register=new RegisterInfo("","Sem registos","");
+                register = new RegisterInfo("","Sem registos","");
                 registerInfo.add(register);
             }
-            register=new RegisterInfo("Kms totais diários: "+kmsTotais,"","");
+            register = new RegisterInfo("Kms totais diários: "+kmsTotais,"","");
             registerInfo.add(register);
             if(nDias-nrDias>1) {
                 register = new RegisterInfo("", "", "");
@@ -1034,8 +1033,7 @@ public class DBManager {
         if(day/10==0) {
             newDia = "0" + Integer.toString(day);
         }
-        else
-        {
+        else{
             newDia=Integer.toString(day);
         }
 
@@ -1044,6 +1042,59 @@ public class DBManager {
         return data;
 
     }
+    public static synchronized LogInfo getViagem(int viagemId){
+        ArrayList<GPSLogger> res = new ArrayList<>();
+        String[] col = new String[]{"*"};
+        Cursor cursor = db.query(TABLE_VIAGEM_INFO, null, VIAGEM_ID+" = '" + viagemId+"'",
+                null, null, null, null);
+        LogInfo viagem =  null;
+        while (cursor.moveToNext()){
+            int id = cursor.getInt(0);
+            int batInicial = cursor.getInt(1);
+            int batFinal = cursor.getInt(2);
+            float distanciaKm = cursor.getFloat(3);
+            String data = cursor.getString(4);
+            int tucId = cursor.getInt(5);
+            int utilizacaoId = cursor.getInt(6);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            Date date = new Date();
+            try {
+                date = format.parse(data);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            viagem = new LogInfo(id,batInicial,batFinal,distanciaKm,date,tucId,utilizacaoId,TYPE_VIAGEM);
+        }
+        return viagem;
+    }
+
+    public static synchronized LogInfo getDeslocacao(int deslocacaoId){
+        ArrayList<GPSLogger> res = new ArrayList<>();
+        Cursor cursor = db.query(TABLE_DESLOCACAO, null, VIAGEM_ID+" = '" + deslocacaoId+"'",
+                null, null, null, null);
+        LogInfo deslocacao =  null;
+        while (cursor.moveToNext()){
+            int id = cursor.getInt(0);
+            int batInicial = cursor.getInt(1);
+            int batFinal = cursor.getInt(2);
+            float distanciaKm = cursor.getFloat(3);
+            String data = cursor.getString(4);
+            int tucId = cursor.getInt(5);
+            int utilizacaoId = cursor.getInt(6);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            Date date = new Date();
+            try {
+                date = format.parse(data);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            deslocacao = new LogInfo(id,batInicial,batFinal,distanciaKm,date,tucId,utilizacaoId,TYPE_DESLOCACAO);
+        }
+        return deslocacao;
+    }
+
     public static synchronized ArrayList<GPSLogger> getLogViagemFromUtilizacao(int utilizacaoId){
         ArrayList<GPSLogger> res = new ArrayList<>();
         String[] col = new String[]{VIAGEM_ID};
@@ -1073,16 +1124,14 @@ public class DBManager {
     public static synchronized boolean preencheMapa(GoogleMap map) {
         //Marker marker=null;
         double longAtual = 0, latAtual = 0, longAntiga = 0, latAntiga = 0;
-        int i = 0, utilizacaoId = 1; //getUltimoUlizacaoId();
+        int i = 0, utilizacaoId = getUltimoUlizacaoId();
         boolean temResultados = false;
 
         ArrayList<GPSLogger> allLogs = getLogViagemFromUtilizacao(utilizacaoId);
         allLogs.addAll(getDeslocacaoFromUtilizacao(utilizacaoId));
         if (!allLogs.isEmpty()) {
             for (int j = 0; j <allLogs.size(); j++) {
-
                 if (map != null) {
-
                     longAntiga = longAtual;
                     latAntiga = latAtual;
                     longAtual = allLogs.get(j).getLongitude();

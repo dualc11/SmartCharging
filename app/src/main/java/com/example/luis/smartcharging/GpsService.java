@@ -63,6 +63,7 @@ import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalDeslo
 import static com.example.luis.smartcharging.DBManager.updateKmBateriaFinalViagem;
 import static com.example.luis.smartcharging.MyTukxis.getIdCarro;
 import static com.example.luis.smartcharging.VolleyRequest.postViagem;
+import static com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY;
 
 public class GpsService extends Service implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -91,7 +92,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     private static int tipoLocalizacao = 2;//Guarda o tipo de localização(GPS ou WIFI) GPS=1 WIFI/DADOS=2
     private static final int TIPO_GPS = 1;
     private static final int TIPO_INTERNET = 2;
-
+    private static boolean isWifiWorking4GPS =  true;
     private static  boolean emViagem = false;
 
     //O sistema chama este método antes de chamar onStartCommand ou onBind para operações de configuração
@@ -123,15 +124,15 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationRequest = new LocationRequest();
                 locationRequest.setInterval(10000);
+                locationRequest.setPriority(PRIORITY_HIGH_ACCURACY);
                 locationCallback = new LocationCallback() {
                     //Método que é evocado no fusedLocationProviderClient.requestLocationUpdates()
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         super.onLocationResult(locationResult);
                         if (locationResult.getLastLocation() != null) {
+
                             guardarLocalização(locationResult.getLastLocation());
-
-
                         } else {
                             tipoLocalizacao = TIPO_GPS;
                             fusedLocationProviderClient.removeLocationUpdates(this);
@@ -307,7 +308,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
 
 
                      public void run() {
-                         mudarTipoLocalizacao();//Verificar o wifi/dados, e modifica a forma de localização
+
                          switch (tipoLocalizacao){
                              case TIPO_INTERNET:
                                  if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -324,15 +325,12 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
                              default:
                                  break;
                          }
-
-
-
                         boolean verif = false;
                         //Toast.makeText(getApplicationContext(),data,Toast.LENGTH_SHORT).show();
                         //Caso a a longitude actual seja diferente da anterior e o gps já tenha captado alguma
                         //localização
 
-                        if (data != null && longitude != longitudeAnterior) {
+                        if (data != null && longitude != longitudeAnterior ) {
                             if(emViagem){
                                 verif = db.insertDataViagem(longitude, latitude, altitude, data, viagemId);
                             }else{
@@ -354,6 +352,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
                                  guardouAlgumaCoordenada = true;
                                 Toast.makeText(getApplicationContext(), tipo+": Mesmos Dados guardados " + data, Toast.LENGTH_SHORT).show();
                         }
+                         mudarTipoLocalizacao();//Verificar o wifi/dados, e modifica a forma de localização
                     }
                 });
             }
@@ -442,11 +441,12 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     }
 
     public void mudarTipoLocalizacao() {
-        if (isConnectWifiOrMobile(getApplicationContext())) {
-            tipoLocalizacao = TIPO_INTERNET;
-        } else {
-            tipoLocalizacao = TIPO_GPS;
-        }
+            if (isConnectWifiOrMobile(getApplicationContext())) {
+                tipoLocalizacao = TIPO_INTERNET;
+            } else {
+                tipoLocalizacao = TIPO_GPS;
+            }
+
     }
     public LocationCallback getlocationCallback(){
             return locationCallback;
@@ -478,7 +478,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     }
     public static void beginTour(){
         emViagem = true;
-      startTour();
+        startTour();
     }
 
     public static void startTour(){//End deslocacao and Begin tour
