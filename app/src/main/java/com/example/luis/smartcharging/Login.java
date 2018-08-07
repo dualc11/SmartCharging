@@ -74,9 +74,9 @@ public class Login extends AccountAuthenticatorActivity {
                 public void onFail(VolleyError error) {
                     progressBar.setVisibility(View.GONE);
                     linearLayout.setVisibility(View.VISIBLE);
-                    if(error.networkResponse.statusCode == Unauthorized){
-                        Toast.makeText(v.getContext(),"Wrong password or email! Please try again",Toast.LENGTH_LONG);
-                    }
+                    Toast.makeText(v.getContext(),"Wrong password or email! Please try again",Toast.LENGTH_LONG);
+
+
                 }
             });
     }
@@ -90,8 +90,9 @@ public class Login extends AccountAuthenticatorActivity {
                     JSONObject info = loginInfo;
                     SharedPreferences.Editor editor = sPref.edit();
                     editor.putString("token",info.getString("access_token"));
-                    editor.putInt("driverId",info.getInt("driver_id"));
-                    editor.putString("driverFirstName",info.getString("driver_first_name"));
+                    JSONObject driver = info.getJSONObject("driver");
+                    editor.putInt("driverId",driver.getInt("id"));
+                    editor.putString("driverFirstName",driver.getString("first_name"));
                     editor.commit();
                 } catch (JSONException e) {
                     e.printStackTrace();

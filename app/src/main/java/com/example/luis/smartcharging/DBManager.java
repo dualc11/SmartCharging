@@ -3,6 +3,7 @@ package com.example.luis.smartcharging;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.os.Build;
@@ -37,11 +38,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DBManager {
+    private static int newVersion = 5;
+
     private  static final int TYPE_VIAGEM = 1;
     private  static final int TYPE_DESLOCACAO = 2;
 
     private static final String MODULE = "Db Manager";
-
+    private static final String DROPTABLE = "DROP TABLE IF EXISTS ";
     private static final String DATABASE_NAME = "myDatabase.sqlite";
     private static final String TABLE_GPS_LOGGER = "GpsLogger";
     private static final String ID="ID";
@@ -137,7 +140,7 @@ public class DBManager {
     private static final String DESTINO_PERCURSO= "destino";
     private static final String DISTANCIA_PERCURSO = "distnacia";
     private static final String CREATE_TABLE_PERCURSO ="CREATE TABLE "+TABELA_PERCURSO+
-            "("+ID_PERCURSO+"INTEGER PRIMARY KEY,"+ORIGEM_PERCURSO+" STRING, "+DESTINO_PERCURSO+" STRING," +
+            "( "+ID_PERCURSO+" INTEGER PRIMARY KEY,"+ORIGEM_PERCURSO+" STRING, "+DESTINO_PERCURSO+" STRING," +
             DISTANCIA_PERCURSO +" DOUBLE)";
     /**
      * TABELA LOG DE VIAGEM
@@ -201,14 +204,12 @@ public class DBManager {
     private static JSONObject jsonObjUtilizacao;
     private static JSONArray jsonArrayUtilizacao;
     public DBManager() {
-
         try {
             if (db == null)
                 db = SQLiteDatabase.openDatabase(
                         Environment.getExternalStorageDirectory() + "/SmartCharging/" + DATABASE_NAME,
                         null,
                         0);
-            //Log.i(MODULE,"Db openned");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -240,7 +241,6 @@ public class DBManager {
                 }
                 db_storage_file = new File(db_storage_file, DATABASE_NAME);
             }
-
             if (!db_storage_file.exists()) {
                 db_storage_file.createNewFile();
                 createDatabase(db_storage_file.getAbsolutePath());
@@ -249,7 +249,27 @@ public class DBManager {
             e.printStackTrace();
         }
     }
+    public static boolean isToUpdateDB(){
+        Log.e("updatecoisa",""+db.getVersion());
+        return db.getVersion()!= newVersion;
+    }
+    public static void updateDB(){
+        db.execSQL(DROPTABLE+TABLE_VIAGEM_INFO);
+        db.execSQL(DROPTABLE+TABELA_UTILIZACAO_CARRO);
+        db.execSQL(DROPTABLE+TABLE_REGISTO_DIARIO);
+        db.execSQL(DROPTABLE+TABLE_CARREGAMENTOS);
+        db.execSQL(DROPTABLE+TABELA_CARROS);
+        db.execSQL(DROPTABLE+TABELA_PLUG);
+        db.execSQL(DROPTABLE+TABELA_PERCURSO);
+        db.execSQL(DROPTABLE+TABLE_GPS_LOGGER);
+        db.execSQL(DROPTABLE+TABELA_LOG_VIAGEM);
+        db.execSQL(DROPTABLE+TABLE_DESLOCACAO);
+        db.execSQL(DROPTABLE+TABELA_LOG_DESLOCACAO);
 
+        initTable();
+        Log.e("updateDB","Update Database");
+        db.setVersion(newVersion);
+    }
     private static void createDatabase(String path) {
         //Log.i(MODULE, "Creating new database");
         db = SQLiteDatabase.openDatabase(
@@ -257,7 +277,10 @@ public class DBManager {
                 null,
                 SQLiteDatabase.CREATE_IF_NECESSARY);
         // create anchor events table
+        initTable();
 
+    }
+    public static void initTable(){
         db.execSQL(CREATE_TABLE_VIAGEM_INFO);
         db.execSQL(CREATE_TABELA_UTILIZACAO_CARRO);
         db.execSQL(CREATE_TABLE_REGISTO);
@@ -269,9 +292,7 @@ public class DBManager {
         db.execSQL(CREATE_TABLE_LOG_VIAGEM);
         db.execSQL(CREATE_TABLE_DESLOCACAO);
         db.execSQL(CREATE_TABLE_LOG_DESLOCACAO);
-
     }
-
     public synchronized boolean insertDataDeslocamento(double longitude, double latitude,double altitude, String dataEhora,int deslocacaoId)
     {
 
