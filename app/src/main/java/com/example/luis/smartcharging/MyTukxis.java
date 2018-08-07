@@ -6,12 +6,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,12 +39,22 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.CreateFileActivityOptions;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveClient;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveResourceClient;
+import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.tasks.Task;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
 import static com.example.luis.smartcharging.DBManager.updateDB;
@@ -51,7 +63,12 @@ import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
 
 public class MyTukxis extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    private DriveClient mDriveClient;
+    private DriveResourceClient mDriveResourceClient;
+    private Bitmap mBitmapToSave;
+
     private static final int PERMISSOES = 1;
+    private static final String TAG = "MyTukxis";
     private static Intent intent;
     private static DBManager db;
     private IntentIntegrator qrScan;
@@ -96,12 +113,26 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
        if(isToUpdateDB()){
             updateDB();
         }
+
         context = getApplicationContext();
         //intializing scan object
         qrScan = new IntentIntegrator(this);
-
+        signIn();
     }
-
+    /** Start sign in activity. */
+    private void signIn() {
+        Log.i(TAG, "Start sign in");
+        GoogleSignInClient GoogleSignInClient = buildGoogleSignInClient();
+        GoogleSignInClient.silentSignIn();
+        startActivityForResult(GoogleSignInClient.getSignInIntent(), 0);//I dont know what is this
+    }
+    private GoogleSignInClient buildGoogleSignInClient() {
+        GoogleSignInOptions signInOptions =
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestScopes(Drive.SCOPE_FILE)
+                        .build();
+        return GoogleSignIn.getClient(this, signInOptions);
+    }
     public void updateUserInfo(){//Atualiza a informação sobre o utilizador(Nome do utilizador, id do utilizador)
         new Thread(new Runnable() {
             @Override
@@ -290,11 +321,90 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
             Toast.makeText(this,"Termine primeiro a viagem",Toast.LENGTH_LONG).show();
         }
     }
+    private void saveFileToDrive() {
+        // Start by creating a new contents, and setting a callback.
+        Task<DriveContents> createContentsTask = mDriveResourceClient.createContents();
+        createContentsTask
+                .continueWithTask(task -> {
+                    DriveContents contents = task.getResult();
+                    OutputStream outputStream = contents.getOutputStream();
+                    try (Writer writer = new OutputStreamWriter(outputStream)) {
+                        writer.write("Hello World!");
+                    }
 
+                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                            .setTitle("New file")
+                            .setMimeType("text/plain")
+                            .setStarred(true)
+                            .build();
+
+                    CreateFileActivityOptions createOptions =
+                            new CreateFileActivityOptions.Builder()
+                                    .setInitialDriveContents(contents)
+                                    .setInitialMetadata(changeSet)
+                                    .build();
+                    return mDriveClient.newCreateFileActivityIntentSender(createOptions);
+                })
+                .addOnSuccessListener(this,
+                        intentSender -> {
+                            try {
+                                startIntentSenderForResult(
+                                        intentSender,2, null, 0, 0, 0);
+                            } catch (IntentSender.SendIntentException e) {
+                                Log.e(TAG, "Unable to create file", e);
+                                finish();
+                            }
+                        })
+                .addOnFailureListener(this, e -> {
+                    Log.e(TAG, "Unable to create file", e);
+                    finish();
+                });
+
+    }
     //Este método é chamado automaticamente quando o objeto qrCode é inicializado no método qrCode().
    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+        switch (requestCode) {
+            case 0:
+                Log.i(TAG, "Sign in request code");
+                // Called after user is signed in.
+                if (resultCode == RESULT_OK) {
+                    Log.i(TAG, "Signed in successfully.");
+                    // Use the last signed in account here since it already have a Drive scope.
+
+                    mDriveClient = Drive.getDriveClient(this, GoogleSignIn.getLastSignedInAccount(this));
+                    // Build a drive resource client.
+                    mDriveResourceClient =
+                            Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
+                    // Start camera.
+                    saveFileToDrive();
+
+                }
+                break;
+            case 1:
+                Log.i(TAG, "capture image request code");
+                // Called after a photo has been taken.
+                if (resultCode == Activity.RESULT_OK) {
+                    Log.i(TAG, "Image captured successfully.");
+                    // Store the image data as a bitmap for writing later.
+                    mBitmapToSave = (Bitmap) data.getExtras().get("data");
+                    saveFileToDrive();
+                }
+                break;
+            case 2:
+                Log.i(TAG, "creator request code");
+                // Called after a file is saved to Drive.
+                if (resultCode == RESULT_OK) {
+                    Log.i(TAG, "Image successfully saved.");
+                    mBitmapToSave = null;
+                    // Just start the camera again for another photo.
+                    startActivityForResult(
+                            new Intent(MediaStore.ACTION_IMAGE_CAPTURE), 1);
+                }
+                break;
+        }
+
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 
         if (result != null)
@@ -649,4 +759,5 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
 }
