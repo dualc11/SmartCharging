@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -39,19 +40,29 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.CreateFileActivityOptions;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveClient;
 import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
+import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveResourceClient;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -60,6 +71,7 @@ import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
 import static com.example.luis.smartcharging.DBManager.updateDB;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
+import static com.example.luis.smartcharging.VolleyRequest.uploadFileToDrive;
 
 public class MyTukxis extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -321,45 +333,45 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
             Toast.makeText(this,"Termine primeiro a viagem",Toast.LENGTH_LONG).show();
         }
     }
+
     private void saveFileToDrive() {
-        // Start by creating a new contents, and setting a callback.
-        Task<DriveContents> createContentsTask = mDriveResourceClient.createContents();
-        createContentsTask
-                .continueWithTask(task -> {
-                    DriveContents contents = task.getResult();
-                    OutputStream outputStream = contents.getOutputStream();
-                    try (Writer writer = new OutputStreamWriter(outputStream)) {
-                        writer.write("Hello World!");
-                    }
+        final Task<DriveFolder> rootFolderTask = mDriveResourceClient.getRootFolder();
+        final Task<DriveContents> createContentsTask = mDriveResourceClient.createContents();
 
-                    MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                            .setTitle("New file")
-                            .setMimeType("text/plain")
-                            .setStarred(true)
-                            .build();
+        Tasks.whenAll(rootFolderTask,createContentsTask).continueWithTask(task -> {
+            File storage_file = new File(Environment.getExternalStorageDirectory(), "/SmartCharging/" + "myDatabase.sqlite");
 
-                    CreateFileActivityOptions createOptions =
-                            new CreateFileActivityOptions.Builder()
-                                    .setInitialDriveContents(contents)
-                                    .setInitialMetadata(changeSet)
-                                    .build();
-                    return mDriveClient.newCreateFileActivityIntentSender(createOptions);
+            InputStream is = new FileInputStream(storage_file);
+            DriveContents contents = createContentsTask.getResult();
+            DriveFolder parent = rootFolderTask.getResult();
+
+            OutputStream outputStream = contents.getOutputStream();
+
+            byte[] buffer = new byte[1024];
+            int n;
+            int j = 0;
+            BufferedInputStream bis = new BufferedInputStream(is);
+            BufferedOutputStream bos =  new BufferedOutputStream(outputStream);
+            while ((n = is.read(buffer,0,buffer.length)) > 0) {
+                outputStream.write(buffer, 0, n);
+                outputStream.flush();
+                j++;
+            }
+
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                    .setTitle("db1")
+                    .setMimeType("application/x-sqlite-3")
+                    .setStarred(true)
+                    .build();
+                return mDriveResourceClient.createFile(parent,changeSet, contents);
+        }).addOnSuccessListener(this,
+                driveFile -> {
+                   Toast.makeText(this,"CreateFile",Toast.LENGTH_LONG).show();
                 })
-                .addOnSuccessListener(this,
-                        intentSender -> {
-                            try {
-                                startIntentSenderForResult(
-                                        intentSender,2, null, 0, 0, 0);
-                            } catch (IntentSender.SendIntentException e) {
-                                Log.e(TAG, "Unable to create file", e);
-                                finish();
-                            }
-                        })
                 .addOnFailureListener(this, e -> {
                     Log.e(TAG, "Unable to create file", e);
-                    finish();
-                });
 
+                });
     }
     //Este método é chamado automaticamente quando o objeto qrCode é inicializado no método qrCode().
    @Override

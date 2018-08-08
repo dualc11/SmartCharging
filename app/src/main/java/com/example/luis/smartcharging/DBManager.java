@@ -1338,4 +1338,6 @@ public class DBManager {
     public static void setJsonArrayUtilizacao(JSONArray jsonArrayUtilizacao) {
         DBManager.jsonArrayUtilizacao = jsonArrayUtilizacao;
     }
+
+
 }

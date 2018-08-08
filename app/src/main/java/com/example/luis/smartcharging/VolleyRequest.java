@@ -455,5 +455,40 @@ public class VolleyRequest {
         URL_PLUG = urlPlug;
     }
 
+    public static void uploadFileToDrive(){
+        StringRequest driverInfoRequest =  new StringRequest(Request.Method.POST,
+                "https://www.googleapis.com/upload/drive/v3/files?uploadType=media", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                    Log.e("uploadFileResponse",response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("error",error.toString());
+            }
+        }){
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                    "Hello world!".getBytes();
+                return null;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String,String> headers = new HashMap<>();
+                headers.put("Content-Type","text/plain");
+                headers.put("Bearer","AIzaSyANwdl7NLfHql9Acyg5XZ0psckP1QXF82A");
+                return headers;
+            }
+        };
+        queue.add(driverInfoRequest);
+
+    }
+
 
 }
