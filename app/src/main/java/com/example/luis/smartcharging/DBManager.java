@@ -39,6 +39,8 @@ import java.util.Date;
 
 public class DBManager {
     private static int newVersion = 5;
+    private static final String FOLDER_DATABASE = "/SmartCharging/";
+
 
     private  static final int TYPE_VIAGEM = 1;
     private  static final int TYPE_DESLOCACAO = 2;
@@ -207,7 +209,7 @@ public class DBManager {
         try {
             if (db == null)
                 db = SQLiteDatabase.openDatabase(
-                        Environment.getExternalStorageDirectory() + "/SmartCharging/" + DATABASE_NAME,
+                        Environment.getExternalStorageDirectory() + FOLDER_DATABASE + DATABASE_NAME,
                         null,
                         0);
         } catch (Exception e) {
@@ -1339,5 +1341,11 @@ public class DBManager {
         DBManager.jsonArrayUtilizacao = jsonArrayUtilizacao;
     }
 
+    public static String getFolderDatabase() {
+        return FOLDER_DATABASE;
+    }
 
+    public static String getDatabaseName() {
+        return DATABASE_NAME;
+    }
 }

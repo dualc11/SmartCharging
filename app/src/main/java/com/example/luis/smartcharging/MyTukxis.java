@@ -73,11 +73,7 @@ import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
 import static com.example.luis.smartcharging.VolleyRequest.uploadFileToDrive;
 
-public class MyTukxis extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-    private DriveClient mDriveClient;
-    private DriveResourceClient mDriveResourceClient;
-    private Bitmap mBitmapToSave;
+public class MyTukxis extends AppCompatActivity{
 
     private static final int PERMISSOES = 1;
     private static final String TAG = "MyTukxis";
@@ -129,21 +125,7 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
         context = getApplicationContext();
         //intializing scan object
         qrScan = new IntentIntegrator(this);
-        signIn();
-    }
-    /** Start sign in activity. */
-    private void signIn() {
-        Log.i(TAG, "Start sign in");
-        GoogleSignInClient GoogleSignInClient = buildGoogleSignInClient();
-        GoogleSignInClient.silentSignIn();
-        startActivityForResult(GoogleSignInClient.getSignInIntent(), 0);//I dont know what is this
-    }
-    private GoogleSignInClient buildGoogleSignInClient() {
-        GoogleSignInOptions signInOptions =
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestScopes(Drive.SCOPE_FILE)
-                        .build();
-        return GoogleSignIn.getClient(this, signInOptions);
+
     }
     public void updateUserInfo(){//Atualiza a informação sobre o utilizador(Nome do utilizador, id do utilizador)
         new Thread(new Runnable() {
@@ -185,9 +167,6 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
         NavigationView navView = (NavigationView) findViewById(R.id.navigation); // initiate a Navigation View
         Menu menu = navView.getMenu();
         menu.getItem(0).setTitle(userName);
-
-
-
 
         // implement setNavigationItemSelectedListener event on NavigationView
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -334,89 +313,10 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
         }
     }
 
-    private void saveFileToDrive() {
-        final Task<DriveFolder> rootFolderTask = mDriveResourceClient.getRootFolder();
-        final Task<DriveContents> createContentsTask = mDriveResourceClient.createContents();
-
-        Tasks.whenAll(rootFolderTask,createContentsTask).continueWithTask(task -> {
-            File storage_file = new File(Environment.getExternalStorageDirectory(), "/SmartCharging/" + "myDatabase.sqlite");
-
-            InputStream is = new FileInputStream(storage_file);
-            DriveContents contents = createContentsTask.getResult();
-            DriveFolder parent = rootFolderTask.getResult();
-
-            OutputStream outputStream = contents.getOutputStream();
-
-            byte[] buffer = new byte[1024];
-            int n;
-            int j = 0;
-            BufferedInputStream bis = new BufferedInputStream(is);
-            BufferedOutputStream bos =  new BufferedOutputStream(outputStream);
-            while ((n = is.read(buffer,0,buffer.length)) > 0) {
-                outputStream.write(buffer, 0, n);
-                outputStream.flush();
-                j++;
-            }
-
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                    .setTitle("db1")
-                    .setMimeType("application/x-sqlite-3")
-                    .setStarred(true)
-                    .build();
-                return mDriveResourceClient.createFile(parent,changeSet, contents);
-        }).addOnSuccessListener(this,
-                driveFile -> {
-                   Toast.makeText(this,"CreateFile",Toast.LENGTH_LONG).show();
-                })
-                .addOnFailureListener(this, e -> {
-                    Log.e(TAG, "Unable to create file", e);
-
-                });
-    }
     //Este método é chamado automaticamente quando o objeto qrCode é inicializado no método qrCode().
    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        switch (requestCode) {
-            case 0:
-                Log.i(TAG, "Sign in request code");
-                // Called after user is signed in.
-                if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Signed in successfully.");
-                    // Use the last signed in account here since it already have a Drive scope.
-
-                    mDriveClient = Drive.getDriveClient(this, GoogleSignIn.getLastSignedInAccount(this));
-                    // Build a drive resource client.
-                    mDriveResourceClient =
-                            Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
-                    // Start camera.
-                    saveFileToDrive();
-
-                }
-                break;
-            case 1:
-                Log.i(TAG, "capture image request code");
-                // Called after a photo has been taken.
-                if (resultCode == Activity.RESULT_OK) {
-                    Log.i(TAG, "Image captured successfully.");
-                    // Store the image data as a bitmap for writing later.
-                    mBitmapToSave = (Bitmap) data.getExtras().get("data");
-                    saveFileToDrive();
-                }
-                break;
-            case 2:
-                Log.i(TAG, "creator request code");
-                // Called after a file is saved to Drive.
-                if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Image successfully saved.");
-                    mBitmapToSave = null;
-                    // Just start the camera again for another photo.
-                    startActivityForResult(
-                            new Intent(MediaStore.ACTION_IMAGE_CAPTURE), 1);
-                }
-                break;
-        }
-
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 
         if (result != null)
@@ -755,21 +655,6 @@ public class MyTukxis extends AppCompatActivity implements GoogleApiClient.Conne
                 }
             }
         }).start();
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
 }
