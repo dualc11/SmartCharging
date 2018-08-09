@@ -67,6 +67,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import static com.example.luis.smartcharging.DBManager.exportDB;
 import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
 import static com.example.luis.smartcharging.DBManager.updateDB;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
@@ -103,7 +104,7 @@ public class MyTukxis extends AppCompatActivity{
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
-        refreshCarsAndPlug();
+        //refreshCarsAndPlug();
         intent = new Intent(this, GpsService.class);
 
         //Verifica as permissões - não avança até que todas as permissões forem cedidas
@@ -431,6 +432,7 @@ public class MyTukxis extends AppCompatActivity{
             if(isToUpdateDB()){
                 updateDB();
             }
+            exportDB();
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.luis.sampledata;
+package com.example.luis.dataclass;
 
 import java.util.Date;
 
