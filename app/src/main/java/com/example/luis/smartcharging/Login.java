@@ -2,6 +2,7 @@ package com.example.luis.smartcharging;
 
 
 import android.accounts.AccountAuthenticatorActivity;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,9 +37,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class Login extends AccountAuthenticatorActivity {
     private static final String TAG = "autherror";
+    private static final String LASTUPDATETIME = "lastUpdateDate";
     private static final int Unauthorized = 401;
     private static Context context;
     private String user;
@@ -57,8 +63,7 @@ public class Login extends AccountAuthenticatorActivity {
         if(sPref.contains("token")){//Se já existir a token, é mudado para o menu mytuxis
             token = sPref.getString("token",null);
             VolleyRequest.setToken(token);//Atualiza o valor token no VolleyRequest
-            signIn();
-
+            checkUploadDrive(sPref);
         }else{
             setContentView(R.layout.activity_login);
         }
@@ -163,7 +168,6 @@ public class Login extends AccountAuthenticatorActivity {
                     saveFileToDrive();
                     File file = new File(Environment.getExternalStorageDirectory(),
                             "topicos.txt");
-                    saveAnyFileToDrive(mDriveResourceClient,file,"MERDA.txt","text/plain");
                     changeToMyTuxis();
                 }
                 break;
@@ -204,8 +208,8 @@ public class Login extends AccountAuthenticatorActivity {
                     Log.e(TAG, "Unable to create file", e);
                 });
     }
-    public void saveAnyFileToDrive(DriveResourceClient mDriveResourceClient,File file,
-                                   String driveFileName, String driveFileMimeType) {
+    public static void saveAnyFileToDrive(Activity activity,DriveResourceClient mDriveResourceClient, File file,
+                                          String driveFileName, String driveFileMimeType) {
         final Task<DriveFolder> rootFolderTask = mDriveResourceClient.getRootFolder();
         final Task<DriveContents> createContentsTask = mDriveResourceClient.createContents();
 
@@ -228,13 +232,46 @@ public class Login extends AccountAuthenticatorActivity {
                     .setStarred(true)
                     .build();
             return mDriveResourceClient.createFile(parent,changeSet, contents);
-        }).addOnSuccessListener(this,
+        }).addOnSuccessListener(activity,
                 driveFile -> {
-                    Toast.makeText(this,"CreateFile ANY FILE CREATED",Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity,"CreateFile ANY FILE CREATED",Toast.LENGTH_LONG).show();
                 })
-                .addOnFailureListener(this, e -> {
+                .addOnFailureListener(activity, e -> {
                     Log.e(TAG, "Unable to create file", e);
                 });
     }
+    public boolean existUpdateDate(SharedPreferences sharedPreferences){
+        return sharedPreferences.contains(LASTUPDATETIME);
+    }
+    public boolean isToUpdateDrive(String lastUpdateDate){
+        Date lastUpdateDate_ = null,currentDate = null;String _currentDate = null;
+        try {
+            lastUpdateDate_  = new SimpleDateFormat("dd/MM/yyyy").parse(lastUpdateDate);
+            _currentDate = new SimpleDateFormat("dd/MM/yyyy").
+                    format(Calendar.getInstance().getTime());
+            currentDate = new SimpleDateFormat("dd/MM/yyyy").parse(_currentDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return lastUpdateDate_.before(currentDate);
+    }
+    public void checkUploadDrive(SharedPreferences sharedPreferences){
+        new Thread(()->{
+            if(existUpdateDate(sharedPreferences)){
+                if(isToUpdateDrive(sharedPreferences.getString(LASTUPDATETIME,null))){
+                    signIn();
+                }
+                else{
+                    changeToMyTuxis();
+                }
+            }else{
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(LASTUPDATETIME,new SimpleDateFormat("dd/MM/yyyy").
+                        format(Calendar.getInstance().getTime()));
+                editor.commit();
+                signIn();
+            }
+        }).start();
 
+    }
 }

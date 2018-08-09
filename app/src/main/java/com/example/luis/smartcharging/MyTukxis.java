@@ -109,17 +109,8 @@ public class MyTukxis extends AppCompatActivity{
         //Verifica as permissões - não avança até que todas as permissões forem cedidas
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
         {
-              pedePermissoes();
-        }
+                  pedePermissoes();
 
-        if (!DBManager.databaseExists()) {
-            DBManager.initDatabase();
-        }
-
-        db = DBManager.getDBManager();
-
-       if(isToUpdateDB()){
-            updateDB();
         }
 
         context = getApplicationContext();
@@ -430,6 +421,16 @@ public class MyTukxis extends AppCompatActivity{
                         }
                     }
             );
+        }else{
+            if (!DBManager.databaseExists()) {
+                DBManager.initDatabase();
+            }
+
+            db = DBManager.getDBManager();
+
+            if(isToUpdateDB()){
+                updateDB();
+            }
         }
     }
 
