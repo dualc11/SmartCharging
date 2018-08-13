@@ -52,7 +52,6 @@ import static com.example.luis.smartcharging.Login.getmDriveResourceClient;
 import static com.example.luis.smartcharging.Login.*;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
-import static com.example.luis.smartcharging.VolleyRequest.uploadFileToDrive;
 
 public class MyTukxis extends AppCompatActivity{
 
@@ -84,7 +83,7 @@ public class MyTukxis extends AppCompatActivity{
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
         getSupportActionBar().setTitle("My Tukxi");
-        //refreshCarsAndPlug();
+
         intent = new Intent(this, GpsService.class);
 
         //Verifica as permissões - não avança até que todas as permissões forem cedidas
@@ -307,6 +306,7 @@ public class MyTukxis extends AppCompatActivity{
                     JSONObject obj = new JSONObject(result.getContents());
                     idCarro = Integer.parseInt(obj.getString("IdCarro"));
                     if(!GpsService.getServicoIniciado()) {
+                        VolleyRequest.loadCarros();
                         if(DBManager.existeCarro(idCarro)){//Verifica se existe um carro com esse id
                             confirmacaoIdTuc("You picked up" + " car", idCarro);
                         }else{
@@ -431,7 +431,7 @@ public class MyTukxis extends AppCompatActivity{
             }else{
                 Toast.makeText(this,"Shit",Toast.LENGTH_LONG);
             }
-
+            refreshCarsAndPlug();
         }
     }
 

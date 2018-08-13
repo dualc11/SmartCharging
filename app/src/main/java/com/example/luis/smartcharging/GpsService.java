@@ -465,7 +465,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
 
     public static void endTour(){//End tour and begin deslocacao
         emViagem =  false;
-        if(insertDeslocaoIdBateriaInicialData(deslocacaoId,IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
+        if(insertDeslocaoIdBateriaInicialData(utilizacaoId,IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
             try {
                 double kmViagem = calculaKmViagem(viagemId);
                 updateKmBateriaFinalViagem(kmViagem,IntroduzirPerBat.getPercentagemBat(),viagemId);
@@ -482,7 +482,7 @@ public class GpsService extends Service implements LocationListener, GoogleApiCl
     }
 
     public static void startTour(){//End deslocacao and Begin tour
-        if(insertViagemIdBateriaInicialData(deslocacaoId, IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
+        if(insertViagemIdBateriaInicialData(utilizacaoId, IntroduzirPerBat.getPercentagemBat(),MyTukxis.getIdCarro())){
             viagemId = getIdViagemAnterior();
             try {
                 double kmDeslocacao = calculaKmDeslocacao(deslocacaoId);

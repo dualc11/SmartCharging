@@ -475,7 +475,7 @@ public class DBManager {
     /*Método para quando é iniciada uma viagem guardar o id dessa viagem que se vai iniciar
     * e também guardar a percentagem de bateria antes da viagem começar*/
     public static synchronized boolean insertUtilizaçãoIdBateriaInicialData(int bateriaInicial, int carroId) {
-        String data = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        String data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
         boolean res = false;
         db.beginTransaction();
@@ -507,8 +507,8 @@ public class DBManager {
         return true;
     }
 
-    public static synchronized boolean insertDeslocaoIdBateriaInicialData(int deslocacaoId, int bateriaInicial, int carroId) {
-        String data = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+    public static synchronized boolean insertDeslocaoIdBateriaInicialData(int utilizacaoId, int bateriaInicial, int carroId) {
+        String data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
         boolean res = false;
         db.beginTransaction();
@@ -518,7 +518,7 @@ public class DBManager {
             String sql = "";
 
             sql = "INSERT INTO " + TABLE_DESLOCACAO + "(" + BATERIAINICIAL_DESLOCACAO + "," + DATA_DESLOCACAO + "," + CARROID_DESLOCACAO + " , " + UTILIZAO_ID_DESLOCACAO + ")" +
-                    " VALUES(" + bateriaInicial + ",'" + data + "'," + carroId + ", " + deslocacaoId + ")";
+                    " VALUES(" + bateriaInicial + ",'" + data + "'," + carroId + ", " + utilizacaoId + ")";
 
             stm = db.compileStatement(sql);
             Log.i("sdfsd", sql);
@@ -584,7 +584,7 @@ public class DBManager {
     }
 
     public static synchronized boolean insertViagemIdBateriaInicialData(int utilizacaoId, int bateriaInicial, int carroId) {
-        String data = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        String data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         SQLiteStatement stm = null;
         boolean res = false;
         db.beginTransaction();
@@ -816,7 +816,7 @@ public class DBManager {
     /*Método para calcular os kms feitos por um condutor durante o dia*/
     public synchronized boolean calculaKmTotaisDiariosCond() {
         String dataActual;
-        dataActual = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+        dataActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 
         Cursor c1;
         c1 = db.rawQuery("SELECT " + DATA + " FROM " + TABLE_REGISTO_DIARIO + " WHERE " + DATA + "='" + dataActual + "'", null);
@@ -906,7 +906,7 @@ public class DBManager {
         Cursor cursor = db.query(TABLE_CARREGAMENTOS, col, BATERIAFINAL + " IS NULL AND " + TUCID + " == " + tucId + " AND " + TOMADAID + " == " + tomadaId,
                 null, null, null, null);
         Percurso percurso = null;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
         while (cursor.moveToNext()) {
             int idCarregamento = cursor.getInt(0);
             String dI = cursor.getString(1);
@@ -1084,7 +1084,7 @@ public class DBManager {
             String data = cursor.getString(4);
             int tucId = cursor.getInt(5);
             int utilizacaoId = cursor.getInt(6);
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = new Date();
             try {
                 date = format.parse(data);
@@ -1258,7 +1258,7 @@ public class DBManager {
             logViagem.setLongitude(clistaGpsLogger.getFloat(1));
             logViagem.setAltitude(clistaGpsLogger.getFloat(2));
             String stringData = clistaGpsLogger.getString(3);
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
                 Date date = format.parse(stringData);
                 logViagem.setData(date);
@@ -1291,7 +1291,7 @@ public class DBManager {
             logDeslocacao.setLongitude(clistaGpsLogger.getFloat(1));
             logDeslocacao.setAltitude(clistaGpsLogger.getFloat(2));
             String stringData = clistaGpsLogger.getString(3);
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
                 Date date = format.parse(stringData);
                 logDeslocacao.setData(date);

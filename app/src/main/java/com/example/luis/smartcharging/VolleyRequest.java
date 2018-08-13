@@ -300,7 +300,7 @@ public class VolleyRequest {
         queue.add(postRequest);
     }
     public static void postViagem (int viagemId,int deslocacaoId,int batLevel,int plugId,int carId){
-         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/"+carId+"/endTour/pickup?access_token="+Login.getToken()
+         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/"+carId+"/action/endTour?access_token="+Login.getToken()
                 ,
               new Response.Listener<String>()
               {
@@ -353,7 +353,7 @@ public class VolleyRequest {
                  tour.put("batInit",viagem.getBatInicial());
                  tour.put("batFinal",viagem.getBatFinal());
                  tour.put("logTour",jsonArray);
-
+                 jsonArray = new JSONArray();
                  for (int i = 0;i<listaGpsDeslocacao.size();i++){
                      JSONObject jsonObject = new JSONObject();
                      jsonObject.put("altitude", Float.toString(listaGpsDeslocacao.get(i).getAltitude()));
