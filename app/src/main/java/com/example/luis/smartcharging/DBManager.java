@@ -1244,8 +1244,6 @@ public class DBManager {
 
     public static ArrayList<GPSLogger> getLogViagem(int viagemId) {
         ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
-
-
         String[] Select = {TABELA_LOG_VIAGEM + "." + ID_LOG_VIAGEM, TABELA_LOG_VIAGEM + "." + LONGITUDE, TABELA_LOG_VIAGEM + "." + ALTITUDE,
                 TABELA_LOG_VIAGEM + "." + DATAEHORA, TABELA_LOG_VIAGEM + "." + VIAGEMID,
                 TABELA_LOG_VIAGEM + "." + LATITUDE_LOG_VIAGEM};
@@ -1337,16 +1335,19 @@ public class DBManager {
         return DATABASE_NAME;
     }
 
-    public static void exportDB() {
+    public static void createCsvFileGps(String path,String fileName,ArrayList<?> info) {
         try {
-        File file = new File(Environment.getExternalStorageDirectory() + FOLDER_DATABASE +"foo.csv");
-        Log.e("expoertdb","file path"+file.getPath());
+        File file = new File(path+fileName);
         PrintWriter writer = new PrintWriter(file);
-        ArrayList<GPSLogger> gpsLoggers = getLogViagem(1);
+        ArrayList<GPSLogger> gpsLoggers = (ArrayList<GPSLogger>) info;
         Collection<String[]> data = new ArrayList<>();
         for (GPSLogger log: gpsLoggers) {
-            writer.println(String.valueOf(log.getId())+","+
-                    String.valueOf(log.getData()));
+            writer.println(
+                    String.valueOf(log.getLongitude())+","+
+                    String.valueOf(log.getLatitude())+","+
+                    String.valueOf(log.getAltitude())+","+
+                    String.valueOf(log.getData().toString())+","+
+                    String.valueOf(log.getViagemId()));
         }
             writer.close();
         } catch (IOException e) {

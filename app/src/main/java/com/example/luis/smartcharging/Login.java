@@ -42,6 +42,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import static com.example.luis.smartcharging.DBManager.createCsvFileGps;
+import static com.example.luis.smartcharging.DBManager.getLogViagem;
+
 public class Login extends AccountAuthenticatorActivity {
     private static final String TAG = "autherror";
     private static final String LASTUPDATETIME = "lastUpdateDate";
@@ -50,11 +53,11 @@ public class Login extends AccountAuthenticatorActivity {
     private String user;
     private String password;
     private static String token = "";
-
     private static final int SIGN_IN_CODE = 0;
+    private static final String MIME_TYPE_DATABASE = "application/x-sqlite-3";
 
-    private DriveClient mDriveClient;
-    private DriveResourceClient mDriveResourceClient;
+    private static DriveClient mDriveClient;
+    private static DriveResourceClient mDriveResourceClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +67,7 @@ public class Login extends AccountAuthenticatorActivity {
             token = sPref.getString("token",null);
             VolleyRequest.setToken(token);//Atualiza o valor token no VolleyRequest
             checkUploadDrive(sPref);
+
         }else{
             setContentView(R.layout.activity_login);
         }
@@ -108,10 +112,8 @@ public class Login extends AccountAuthenticatorActivity {
                 public void onSucess(JSONObject result) {
                     saveLoginInfo(result);
                     progressBar.setVisibility(View.GONE);
-
                     changeToMyTuxis();
                 }
-
                 @Override
                 public void onFail(VolleyError error) {
                     progressBar.setVisibility(View.GONE);
@@ -164,49 +166,34 @@ public class Login extends AccountAuthenticatorActivity {
                     // Build a drive resource client.
                     mDriveResourceClient =
                             Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
-                    // Start camera.
-                    saveFileToDrive();
+                  /* createCsvFileGps(Environment.getExternalStorageDirectory()+DBManager.getFolderDatabase(),
+                                    "logViagem.csv",getLogViagem(1));
+                    saveAnyFileToDrive(this,mDriveResourceClient,
+                                        new File(Environment.getExternalStorageDirectory(),
+                                                DBManager.getFolderDatabase() + DBManager.getDatabaseName()),
+                                        DBManager.getDatabaseName(),
+                                        MIME_TYPE_DATABASE);
+                    saveAnyFileToDrive(this,mDriveResourceClient,
+                            new File(Environment.getExternalStorageDirectory(),
+                                    DBManager.getDatabaseName()),
+                            DBManager.getDatabaseName(),
+                            MIME_TYPE_DATABASE);
+                    saveAnyFileToDrive(this,mDriveResourceClient,
+                            new File(Environment.getExternalStorageDirectory(),
+                                    "logViagem.csv"),
+                            "logViagem.csv",
+                            MIME_TYPE_DATABASE);
                     File file = new File(Environment.getExternalStorageDirectory(),
-                            "topicos.txt");
+                            "topicos.txt");*/
+                    changeToMyTuxis();
+                }else{
                     changeToMyTuxis();
                 }
                 break;
+            default:
+                changeToMyTuxis();
+                break;
         }
-    }
-    public void saveFileToDrive() {
-        final Task<DriveFolder> rootFolderTask = mDriveResourceClient.getRootFolder();
-        final Task<DriveContents> createContentsTask = mDriveResourceClient.createContents();
-
-        Tasks.whenAll(rootFolderTask,createContentsTask).continueWithTask(task -> {
-            File db_file = new File(Environment.getExternalStorageDirectory(),
-                    DBManager.getFolderDatabase() + DBManager.getDatabaseName());
-
-            InputStream is = new FileInputStream(db_file);
-            DriveContents contents = createContentsTask.getResult();
-            DriveFolder parent = rootFolderTask.getResult();
-
-            OutputStream outputStream = contents.getOutputStream();
-
-            byte[] buffer = new byte[1024];
-            int n;
-            while ((n = is.read(buffer,0,buffer.length)) > 0) {
-                outputStream.write(buffer, 0, n);
-                outputStream.flush();
-            }
-
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                    .setTitle(DBManager.getDatabaseName())
-                    .setMimeType("application/x-sqlite-3")
-                    .setStarred(true)
-                    .build();
-            return mDriveResourceClient.createFile(parent,changeSet, contents);
-        }).addOnSuccessListener(this,
-                driveFile -> {
-                    Toast.makeText(this,"CreateFile",Toast.LENGTH_LONG).show();
-                })
-                .addOnFailureListener(this, e -> {
-                    Log.e(TAG, "Unable to create file", e);
-                });
     }
     public static void saveAnyFileToDrive(Activity activity,DriveResourceClient mDriveResourceClient, File file,
                                           String driveFileName, String driveFileMimeType) {
@@ -243,7 +230,7 @@ public class Login extends AccountAuthenticatorActivity {
     public boolean existUpdateDate(SharedPreferences sharedPreferences){
         return sharedPreferences.contains(LASTUPDATETIME);
     }
-    public boolean isToUpdateDrive(String lastUpdateDate){
+    public static boolean  isToUpdateDrive(String lastUpdateDate){
         Date lastUpdateDate_ = null,currentDate = null;String _currentDate = null;
         try {
             lastUpdateDate_  = new SimpleDateFormat("dd/MM/yyyy").parse(lastUpdateDate);
@@ -255,23 +242,35 @@ public class Login extends AccountAuthenticatorActivity {
         }
         return lastUpdateDate_.before(currentDate);
     }
+
+    public static DriveClient getmDriveClient() {
+        return mDriveClient;
+    }
+
+    public static DriveResourceClient getmDriveResourceClient() {
+        return mDriveResourceClient;
+    }
+
     public void checkUploadDrive(SharedPreferences sharedPreferences){
         new Thread(()->{
             if(existUpdateDate(sharedPreferences)){
                 if(isToUpdateDrive(sharedPreferences.getString(LASTUPDATETIME,null))){
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(LASTUPDATETIME,new SimpleDateFormat("dd/MM/yyyy").
+                            format(Calendar.getInstance().getTime()));
+                    editor.commit();
                     signIn();
-                }
-                else{
+                }else{
                     changeToMyTuxis();
                 }
             }else{
-                SharedPreferences.Editor editor = sharedPreferences.edit();
+           /*     SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(LASTUPDATETIME,new SimpleDateFormat("dd/MM/yyyy").
                         format(Calendar.getInstance().getTime()));
-                editor.commit();
+                editor.commit();*/
                 signIn();
             }
-        }).start();
 
+        }).start();
     }
 }

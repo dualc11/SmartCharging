@@ -300,7 +300,7 @@ public class VolleyRequest {
         queue.add(postRequest);
     }
     public static void postViagem (int viagemId,int deslocacaoId,int batLevel,int plugId,int carId){
-         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/"+carId+"/action/pickup?access_token="+Login.getToken()
+         StringRequest postRequest = new StringRequest(Request.Method.POST, "https://smile.prsma.com/tukxi/api/car/"+carId+"/endTour/pickup?access_token="+Login.getToken()
                 ,
               new Response.Listener<String>()
               {
@@ -433,10 +433,6 @@ public class VolleyRequest {
           queue.add(postRequest);
 
   }
-    public static void sendTucsCarregar(int tomadaId,int batInicial,
-                                        int batFinal, int horaIncial, int horaFinal){
-
-    }
     public static String getToken() {
         return token;
     }

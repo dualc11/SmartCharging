@@ -35,41 +35,21 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.drive.CreateFileActivityOptions;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi;
-import com.google.android.gms.drive.DriveClient;
-import com.google.android.gms.drive.DriveContents;
-import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveResourceClient;
-import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-import static com.example.luis.smartcharging.DBManager.exportDB;
 import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
 import static com.example.luis.smartcharging.DBManager.updateDB;
+import static com.example.luis.smartcharging.Login.getmDriveResourceClient;
+
+import static com.example.luis.smartcharging.Login.*;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
 import static com.example.luis.smartcharging.VolleyRequest.loadPlug;
 import static com.example.luis.smartcharging.VolleyRequest.uploadFileToDrive;
@@ -432,7 +412,26 @@ public class MyTukxis extends AppCompatActivity{
             if(isToUpdateDB()){
                 updateDB();
             }
-            exportDB();
+            SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
+            if(isToUpdateDrive(sPref.getString("lastUpdateDate",null))){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        saveAnyFileToDrive(getParent(),getmDriveResourceClient(),
+                                new File(Environment.getExternalStorageDirectory()
+                                        ,DBManager.getFolderDatabase()+DBManager.getDatabaseName()),
+                                DBManager.getDatabaseName(),
+                                "application/x-sqlite-3");
+                        SharedPreferences.Editor editor = sPref.edit();
+                        editor.putString("lastUpdateDate",new SimpleDateFormat("dd/MM/yyyy").
+                                format(Calendar.getInstance().getTime()));
+                        editor.commit();
+                    }
+                }).start();
+            }else{
+                Toast.makeText(this,"Shit",Toast.LENGTH_LONG);
+            }
+
         }
     }
 
