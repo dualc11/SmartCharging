@@ -63,13 +63,13 @@ public class BeingCharging extends MyTukxis {
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        Log.i("asd","result");
+
         if (result != null)
         {
             //if qrcode has nothing in it
             if (result.getContents() == null)
             {
-                Toast.makeText(this, "Result Not Found", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getResources().getString(R.string.qr_result_not_found), Toast.LENGTH_LONG).show();
             }
             else
             {
@@ -89,7 +89,7 @@ public class BeingCharging extends MyTukxis {
                         if(DBManager.existePulg(tomadaId)){
                             confirmacao("plug",tomadaId);
                         }else{
-                            Toast.makeText(this,"Não existe tomada com esse ID",Toast.LENGTH_LONG).show();
+                            Toast.makeText(this,getResources().getString(R.string.wrong_qr_plug),Toast.LENGTH_LONG).show();
                         }
 
                     }
@@ -101,7 +101,7 @@ public class BeingCharging extends MyTukxis {
                             MyTukxis.setTucId(tucId);//Mudei aqui
                             confirmacao("car", tucId);
                         } else{
-                            Toast toast = Toast.makeText(getContext(), "Não existe Tuc com esse id", Toast.LENGTH_LONG);
+                            Toast toast = Toast.makeText(getContext(),getResources().getString(R.string.wrong_qr_car), Toast.LENGTH_LONG);
                             toast.show();
                         }
                     }
@@ -178,8 +178,7 @@ public class BeingCharging extends MyTukxis {
                     {
                         new AlertDialog.Builder(BeingCharging.this)
                                 .setTitle("Informação")
-                                .setMessage("Please read plug code. After read and confirm the plug id, please read"+
-                                        " car code.")
+                                .setMessage(getResources().getString(R.string.qr_read_plug))
                                 .setCancelable(false)
                                 .setPositiveButton("Ok", new DialogInterface.OnClickListener()
                                 {

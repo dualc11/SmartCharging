@@ -99,40 +99,14 @@ public class IntroduzirPerBat extends MyTukxis {
                             }
             else
             {
-                Toast.makeText(this,"Está a ser utilizado um carro",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getResources().getString(R.string.using_car),Toast.LENGTH_LONG).show();
             }
         }
         else
         {
-            Toast.makeText(this,"Por favor insira uma percentagem de bateria válida!",Toast.LENGTH_LONG).show();
+            Toast.makeText(this,getResources().getString(R.string.please_insert_bat),Toast.LENGTH_LONG).show();
         }
     }
-    public void iniciarViagem()
-    {
-        if(percentagemBat!=0)
-        {
-            if (!comecouViagem)
-            {
-               // startService(MyTukxis.getIntentGps());
-
-                //int idCarro=getIntent().getIntExtra("idCarro",0);
-                int idCarro=MyTukxis.getIdCarro();
-                enviaInfoWhatsapp(idCarro,"está a ser usado pelo");
-                foiParaWhatsapp=true;
-                comecouViagem = true;
-            }
-            else
-            {
-                Toast.makeText(this,"Está uma viagem em curso!",Toast.LENGTH_LONG).show();
-            }
-        }
-        else
-        {
-            Toast.makeText(this,"Por favor insira uma percentagem de bateria válida!",Toast.LENGTH_LONG).show();
-        }
-    }
-
-
     /*Método para parar finalizar a viagem*/
     public void terminarUtilizacao() throws JSONException {
         new Thread(new Runnable() {
@@ -181,12 +155,12 @@ public class IntroduzirPerBat extends MyTukxis {
                     }
                     else
                     {
-                        Toast.makeText(getApplicationContext(),"Não está nenhuma viagem em curso!",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.not_in_tour_),Toast.LENGTH_LONG).show();
                     }
                 }
                 else
                 {
-                    Toast.makeText(getApplicationContext(),"Por favor insira uma percentagem de bateria válida!",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.bat_error),Toast.LENGTH_LONG).show();
                 }
             }
         }).start();
@@ -286,18 +260,6 @@ public class IntroduzirPerBat extends MyTukxis {
                 }
         );
     }
-
-    public void enviaInfoWhatsapp(int idCarro,String mensagem)
-    {
-        Intent sendIntent = new Intent();
-        sendIntent.setPackage("com.whatsapp");
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "O tuc-tuc número "+idCarro+" "+mensagem +
-                " utilizador "+ MyTukxis.getUserId());
-        sendIntent.setType("text/plain");
-        startActivity(Intent.createChooser(sendIntent, "ola"));
-    }
-
     @Override
     protected void onPostResume() {
         super.onPostResume();

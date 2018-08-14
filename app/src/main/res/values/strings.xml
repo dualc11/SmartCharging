@@ -6,16 +6,44 @@
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_login">Sign in</string>
 
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
+    <!-- LOGIN ACTIVITY -->
+    <string name = "login_error">Wrong password or email! Please try again </string>
+    <string name="permission_denied">Não pode negar estas permissões!</string>
+    <string name="permission_comfirm">Confirme que adicionou todas as !</string>
+
+    <!-- MY TUKXIS ACTIVITY -->
+    <string name = "my_tukxis">My Tukxi</string>
+    <string name = "not_in_tour">Não está nenhuma viagem em curso</string>
+    <string name = "qr_first_message">The car that you want pick up is charging? If not please click \'No\' and read car code. Else click \'Yes\'.</string>
+    <string name = "tour_already_started" >Está uma viagem em curso!</string>
+    <string name = "qr_second_message">You want put your car charging? If not please click \'No\' and read car code. Else click 'Yes'.</string>
+    <string name = "not_using_car">You are not using a car! </string>
+    <string name = "pick_up_car">You pick up car</string>
+    <string name = "drop_off_car">You dropped off car</string>
+    <string name = "acess_to_camera">The app wants to access your camera</string>
+    <string name = "check_and_confirm_qr_code">Please, check and confirm</string>
+    <string name = "wrong_qr_car">Não existe esse carro com esse Id</string>
+    <string name = "end_tour_fisrt">Termine primeiro a viagem atual!</string>
+
+    <!-- Being Charging ACTIVITY -->
+    <string name = "qr_result_not_found">Result Not Found</string>
+    <string name = "wrong_qr_plug">Não existe tomada com esse ID</string>
+    <string name = "qr_read_plug">Please read plug code. After read and confirm the plug id, please readcar code.</string>
+    <string name = "fleet_error">Não foi possível atualizar o feed</string>
+
+    <!--  Fragment today ACTIVITY -->
+    <string name = "save_km">Registo diário inserido com sucesso!</string>
+    <string name = "already_save_km">O registo diário já foi inserido anteriormente!</string>
+    <string name = "end_tour">Termine primeiro a viagem</string>
+
+    <!--  IntroduzirPerBat today ACTIVITY -->
+    <string name = "using_car">Está a ser utilizado um carro</string>
+    <string name = "please_insert_bat">Por favor insira uma percentagem de bateria válida!</string>
+    <string name = "not_in_tour_">Não está nenhuma viagem em curso</string>
+    <string name = "bat_error">Por favor insira uma percentagem de bateria válida!</string>
+
+    <!--  MAP  ACTIVITY -->
+    <string name = "distance_travelled">Distance travelled during the tour This value is an estimation based on real time data about your location</string>
+    <string name = "battery_autonomy">Battery autonomy This value is an estimation based on real time data about your location</string>
+
 </resources>

@@ -82,21 +82,14 @@ public class MyTukxis extends AppCompatActivity{
         toolbar = (Toolbar) findViewById(R.id.toolbar); // get the reference of Toolbar
         setSupportActionBar(toolbar); // Setting/replace toolbar as the ActionBar
         navigationClick(toolbar);
-        getSupportActionBar().setTitle("My Tukxi");
+        getSupportActionBar().setTitle(getResources().getString(R.string.my_tukxis));
 
         intent = new Intent(this, GpsService.class);
-
-        //Verifica as permissões - não avança até que todas as permissões forem cedidas
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-                  pedePermissoes();
-
-        }
 
         context = getApplicationContext();
         //intializing scan object
         qrScan = new IntentIntegrator(this);
-
+        db = DBManager.getDBManager();
     }
     public void updateUserInfo(){//Atualiza a informação sobre o utilizador(Nome do utilizador, id do utilizador)
         new Thread(new Runnable() {
@@ -174,7 +167,7 @@ public class MyTukxis extends AppCompatActivity{
                         }
                         else
                         {
-                            Toast.makeText(getApplicationContext(),"Não está nenhuma viagem em curso",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(),getResources().getString(R.string.not_in_tour),Toast.LENGTH_SHORT).show();
                         }
                         return true;
                     case R.id.carregar:
@@ -239,13 +232,12 @@ public class MyTukxis extends AppCompatActivity{
         {
             /*String mensagem= "If the car that you want to pick up is still connected to a socket, please," +
                     "unplug it and use QR Code placed on the plug. Otherwise, please, skip this step";*/
-            String mensagem="The car that you want pick up is charging? If not please click 'No' and read car code."+
-            " Else click 'Yes'.";
+            String mensagem = getResources().getString(R.string.qr_first_message);
             alerta(mensagem,false);
         }
         else
         {
-            Toast.makeText(this, "Está uma viagem em curso!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getResources().getString(R.string.tour_already_started), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -257,13 +249,12 @@ public class MyTukxis extends AppCompatActivity{
                 if(GpsService.getServicoIniciado())
                 {
                     //String mensagem= "If you want put charging you car use QR Code placed on the plug. Otherwise, please, skip this step";
-                    String mensagem="You want put your car charging? If not please click 'No' and read car code."+
-                            " Else click 'Yes'.";
+                    String mensagem = getResources().getString(R.string.qr_second_message);
                     alerta(mensagem,true);
                 }
                 else
                 {
-                    Toast.makeText(getApplicationContext(),"You are not using a car!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),getResources().getString(R.string.not_using_car),Toast.LENGTH_SHORT).show();
                 }
         }
     }
@@ -308,7 +299,7 @@ public class MyTukxis extends AppCompatActivity{
                     if(!GpsService.getServicoIniciado()) {
                         VolleyRequest.loadCarros();
                         if(DBManager.existeCarro(idCarro)){//Verifica se existe um carro com esse id
-                            confirmacaoIdTuc("You picked up" + " car", idCarro);
+                            confirmacaoIdTuc(getResources().getString(R.string.pick_up_car), idCarro);
                         }else{
                                 Toast.makeText(getApplicationContext(),"Não existe carro com esse Id",Toast.LENGTH_LONG).show();
 
@@ -316,7 +307,7 @@ public class MyTukxis extends AppCompatActivity{
                     }
                     else
                     {
-                        confirmacaoIdTuc("You dropped off" + " car", idCarro);
+                        confirmacaoIdTuc(getResources().getString(R.string.drop_off_car), idCarro);
                     }
                 }
                 catch (JSONException e)
@@ -342,98 +333,6 @@ public class MyTukxis extends AppCompatActivity{
 
     //Métodos para a verificação das permissões, mostra um alert para cada permissão que ainda não foi cedida
 
-    public void pedePermissoes()
-    {
-        ActivityCompat.requestPermissions(this,new String[]{
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.INTERNET,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                android.Manifest.permission.CAMERA,
-                android.Manifest.permission.ACCESS_WIFI_STATE,
-                android.Manifest.permission.ACCESS_NETWORK_STATE,
-                android.Manifest.permission.READ_PHONE_STATE},PERMISSOES);
-    }
-
-    //Este método é chamado automaticamente quando é feito o "requestPermissions(...) dentro do método pedePermissoes()
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
-        boolean concedidas = true;
-        int index=0;
-        for(int i : grantResults)
-        {
-            if(i == PermissionChecker.PERMISSION_DENIED)
-            {
-                concedidas = false;
-                break;
-            }
-            index++;
-        }
-        final String value=Integer.toString(index);
-        if(!concedidas)
-        {
-            runOnUiThread(()->
-                    {
-                        final int finalIndex = Integer.parseInt(value);
-                        if (!isFinishing())
-                        {
-                           new AlertDialog.Builder(MyTukxis.this)
-                                    .setTitle("Alerta")
-                                    .setMessage("Não pode negar estas permissões!!!")
-                                    .setCancelable(false)
-                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener()
-                                    {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which)
-                                        {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                                            {
-                                                if(!shouldShowRequestPermissionRationale(permissions[finalIndex]))
-                                                {
-                                                    alertaDefinicoes();
-                                                }
-                                                else
-                                                {
-                                                    pedePermissoes();
-                                                }
-                                            }
-                                        }
-                                    }).show();
-                        }
-                    }
-            );
-        }else{
-            if (!DBManager.databaseExists()) {
-                DBManager.initDatabase();
-            }
-
-            db = DBManager.getDBManager();
-
-            if(isToUpdateDB()){
-                updateDB();
-            }
-            SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
-            if(isToUpdateDrive(sPref.getString("lastUpdateDate",null))){
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        saveAnyFileToDrive(getParent(),getmDriveResourceClient(),
-                                new File(Environment.getExternalStorageDirectory()
-                                        ,DBManager.getFolderDatabase()+DBManager.getDatabaseName()),
-                                DBManager.getDatabaseName(),
-                                "application/x-sqlite-3");
-                        SharedPreferences.Editor editor = sPref.edit();
-                        editor.putString("lastUpdateDate",new SimpleDateFormat("dd/MM/yyyy").
-                                format(Calendar.getInstance().getTime()));
-                        editor.commit();
-                    }
-                }).start();
-            }else{
-                Toast.makeText(this,"Shit",Toast.LENGTH_LONG);
-            }
-            refreshCarsAndPlug();
-        }
-    }
 
     public void alerta(String mnsg,boolean carregar)
     {
@@ -442,7 +341,7 @@ public class MyTukxis extends AppCompatActivity{
                     if (!isFinishing())//Enquanto a atviidade ainda está em progresso
                     {
                         new AlertDialog.Builder(MyTukxis.this)
-                                .setTitle("The app wants to access your camera")
+                                .setTitle(getResources().getString(R.string.acess_to_camera))
                                 .setMessage(mnsg)
                                 .setCancelable(false)
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener()
@@ -490,7 +389,7 @@ public class MyTukxis extends AppCompatActivity{
                     {
                         new AlertDialog.Builder(MyTukxis.this)
                                 .setTitle(title+" "+id)
-                                .setMessage("Please, check and confirm")
+                                .setMessage(getResources().getString(R.string.check_and_confirm_qr_code))
                                 .setCancelable(false)
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener()
                                 {
@@ -513,7 +412,7 @@ public class MyTukxis extends AppCompatActivity{
                                         else
                                         {
                                             Log.e("Existe Carro","Id carro não existe");
-                                            Toast.makeText(getContext(),"Não existe esse carro com esse Id",Toast.LENGTH_LONG);
+                                            Toast.makeText(getContext(),getResources().getString(R.string.wrong_qr_car),Toast.LENGTH_LONG);
                                         }
 
                                     }
@@ -573,32 +472,6 @@ public class MyTukxis extends AppCompatActivity{
             return false;
         }
     }*/
-
-    public void alertaDefinicoes()
-    {
-        int REQUEST_PERMISSION_SETTING = 1;
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
-        //Delay para o utilizador não ver o segundo alerta antes de ir às definições
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        new AlertDialog.Builder(this)
-                .setTitle("Confirmação")
-                .setMessage("Confirme que adicionou todas as permissões")
-                .setCancelable(false)
-                .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
-                    {
-                       pedePermissoes();
-                    }
-                }).show();
-    }
     //Alterei aqui
     public void iniciarCarregamento()
     {
@@ -610,7 +483,7 @@ public class MyTukxis extends AppCompatActivity{
         }
         else
         {
-            Toast.makeText(getApplicationContext(),"Termine primeiro a viagem atual!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),getResources().getString(R.string.end_tour_fisrt),Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -56,7 +56,7 @@ public class CarsCharging extends MyTukxis {
         }
         else
         {
-            Toast.makeText(getApplicationContext(),"Termine primeiro a viagem atual!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),getResources().getString(R.string.end_tour_fisrt),Toast.LENGTH_SHORT).show();
         }
     }
 }

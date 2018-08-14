@@ -4,10 +4,17 @@ package com.example.luis.smartcharging;
 import android.accounts.AccountAuthenticatorActivity;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -44,8 +51,12 @@ import java.util.Date;
 
 import static com.example.luis.smartcharging.DBManager.createCsvFileGps;
 import static com.example.luis.smartcharging.DBManager.getLogViagem;
+import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
+import static com.example.luis.smartcharging.DBManager.updateDB;
+import static com.example.luis.smartcharging.MyTukxis.refreshCarsAndPlug;
 
 public class Login extends AccountAuthenticatorActivity {
+    private static final int PERMISSOES = 1;
     private static final String TAG = "autherror";
     private static final String LASTUPDATETIME = "lastUpdateDate";
     private static final int Unauthorized = 401;
@@ -55,6 +66,7 @@ public class Login extends AccountAuthenticatorActivity {
     private static String token = "";
     private static final int SIGN_IN_CODE = 0;
     private static final String MIME_TYPE_DATABASE = "application/x-sqlite-3";
+    private static DBManager db;
 
     private static DriveClient mDriveClient;
     private static DriveResourceClient mDriveResourceClient;
@@ -62,6 +74,11 @@ public class Login extends AccountAuthenticatorActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            pedePermissoes();
+
+        }
         SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
         if(sPref.contains("token")){//Se já existir a token, é mudado para o menu mytuxis
             token = sPref.getString("token",null);
@@ -118,7 +135,7 @@ public class Login extends AccountAuthenticatorActivity {
                 public void onFail(VolleyError error) {
                     progressBar.setVisibility(View.GONE);
                     linearLayout.setVisibility(View.VISIBLE);
-                    Toast.makeText(v.getContext(),"Wrong password or email! Please try again",Toast.LENGTH_LONG);
+                    Toast.makeText(v.getContext(),R.string.login_error,Toast.LENGTH_LONG);
 
 
                 }
@@ -273,4 +290,122 @@ public class Login extends AccountAuthenticatorActivity {
 
         }).start();
     }
+    public void pedePermissoes()
+    {
+        ActivityCompat.requestPermissions(this,new String[]{
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.INTERNET,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA,
+                android.Manifest.permission.ACCESS_WIFI_STATE,
+                android.Manifest.permission.ACCESS_NETWORK_STATE,
+                android.Manifest.permission.READ_PHONE_STATE},PERMISSOES);
+    }
+
+    //Este método é chamado automaticamente quando é feito o "requestPermissions(...) dentro do método pedePermissoes()
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        boolean concedidas = true;
+        int index=0;
+        for(int i : grantResults)
+        {
+            if(i == PermissionChecker.PERMISSION_DENIED)
+            {
+                concedidas = false;
+                break;
+            }
+            index++;
+        }
+        final String value=Integer.toString(index);
+        if(!concedidas)
+        {
+            runOnUiThread(()->
+                    {
+                        final int finalIndex = Integer.parseInt(value);
+                        if (!isFinishing())
+                        {
+                            new AlertDialog.Builder(Login.this)
+                                    .setTitle("Alerta")
+                                    .setMessage(getResources().getString(R.string.permission_denied))
+                                    .setCancelable(false)
+                                    .setPositiveButton("Ok", new DialogInterface.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which)
+                                        {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                                            {
+                                                if(!shouldShowRequestPermissionRationale(permissions[finalIndex]))
+                                                {
+                                                    alertaDefinicoes();
+                                                }
+                                                else
+                                                {
+                                                    pedePermissoes();
+                                                }
+                                            }
+                                        }
+                                    }).show();
+                        }
+                    }
+            );
+        }else{
+            if (!DBManager.databaseExists()) {
+                DBManager.initDatabase();
+            }
+
+            db = DBManager.getDBManager();
+/*
+            if(isToUpdateDB()){
+                updateDB();
+            }
+            SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
+            if(isToUpdateDrive(sPref.getString("lastUpdateDate",null))){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        saveAnyFileToDrive(getParent(),getmDriveResourceClient(),
+                                new File(Environment.getExternalStorageDirectory()
+                                        ,DBManager.getFolderDatabase()+DBManager.getDatabaseName()),
+                                DBManager.getDatabaseName(),
+                                "application/x-sqlite-3");
+                        SharedPreferences.Editor editor = sPref.edit();
+                        editor.putString("lastUpdateDate",new SimpleDateFormat("dd/MM/yyyy").
+                                format(Calendar.getInstance().getTime()));
+                        editor.commit();
+                    }
+                }).start();
+            }else{
+                Toast.makeText(this,"Shit",Toast.LENGTH_LONG);
+            }*/
+           // refreshCarsAndPlug();
+        }
+    }
+    public void alertaDefinicoes()
+    {
+        int REQUEST_PERMISSION_SETTING = 1;
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
+        //Delay para o utilizador não ver o segundo alerta antes de ir às definições
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Confirmação")
+                .setMessage(getResources().getString(R.string.permission_comfirm))
+                .setCancelable(false)
+                .setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        pedePermissoes();
+                    }
+                }).show();
+    }
+
 }

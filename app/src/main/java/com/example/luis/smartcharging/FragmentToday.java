@@ -54,14 +54,14 @@ public class FragmentToday extends Fragment {
     {
         if(!GpsService.getServicoIniciado()) {
             if (MyTukxis.getDb().calculaKmTotaisDiariosCond()) {
-                Toast.makeText(getContext(), "Registo diário inserido com sucesso!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getResources().getString(R.string.save_km), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getContext(), "O registo diário já foi inserido anteriormente!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),getResources().getString(R.string.already_save_km), Toast.LENGTH_SHORT).show();
             }
         }
         else
         {
-            Toast.makeText(getContext(),"Termine primeiro a viagem",Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(),getResources().getString(R.string.end_tour),Toast.LENGTH_LONG).show();
         }
     }
 }

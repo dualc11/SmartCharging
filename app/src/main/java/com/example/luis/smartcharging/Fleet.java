@@ -83,7 +83,7 @@ public class Fleet extends MyTukxis {
 
             @Override
             public void onFail(VolleyError error) {
-                Toast toast = Toast.makeText(getContext(), "Não foi possível atualizar o feed", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(getContext(), getResources().getString(R.string.fleet_error), Toast.LENGTH_LONG);
                 toast.show();
             }
         });

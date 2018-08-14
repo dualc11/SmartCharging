@@ -171,12 +171,10 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
         myTripInfo.add("Distination"+","
                 +percurso.getOrigem()+" - "+percurso.getDestino()+","+
                 "Back and forth around "+percurso.getDistancia());
-        myTripInfo.add("Distance travelled during the tour"+
-                ","+"This value is an estimation based on real time data about your location"+","+
+        myTripInfo.add(getResources().getString(R.string.distance_travelled)+
                 " 15Km");
 
-        myTripInfo.add("Battery autonomy"+","
-                +"This value is an estimation based on real time data about your location"+","+
+        myTripInfo.add(getResources().getString(R.string.battery_autonomy)+
                 "25Km");
 
 
