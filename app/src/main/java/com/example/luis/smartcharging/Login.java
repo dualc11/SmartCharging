@@ -24,6 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.example.luis.dataclass.LogInfo;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -40,17 +41,30 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
 
 import static com.example.luis.smartcharging.DBManager.createCsvFileGps;
+import static com.example.luis.smartcharging.DBManager.getAllDeslocacao;
+import static com.example.luis.smartcharging.DBManager.getAllLogViagem;
+import static com.example.luis.smartcharging.DBManager.getAllViagem;
+import static com.example.luis.smartcharging.DBManager.getDBManager;
+import static com.example.luis.smartcharging.DBManager.getLogDeslocacao;
 import static com.example.luis.smartcharging.DBManager.getLogViagem;
+import static com.example.luis.smartcharging.DBManager.getViagem;
 import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
 import static com.example.luis.smartcharging.DBManager.updateDB;
 import static com.example.luis.smartcharging.MyTukxis.refreshCarsAndPlug;
@@ -80,10 +94,12 @@ public class Login extends AccountAuthenticatorActivity {
 
         }
         SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
-        if(sPref.contains("token")){//Se já existir a token, é mudado para o menu mytuxis
+        if(sPref.contains("token")){//Se já existir a token
             token = sPref.getString("token",null);
             VolleyRequest.setToken(token);//Atualiza o valor token no VolleyRequest
-            checkUploadDrive(sPref);
+          //  checkUploadDrive(sPref);
+            db = getDBManager();
+            signIn();
 
         }else{
             setContentView(R.layout.activity_login);
@@ -91,6 +107,7 @@ public class Login extends AccountAuthenticatorActivity {
 
 
     }
+    //Método responsável por criar a atividade que permite ao user escolher a conta da drive
     private void signIn() {
         Log.i(TAG, "Start sign in");
         GoogleSignInClient GoogleSignInClient = buildGoogleSignInClient();
@@ -104,8 +121,8 @@ public class Login extends AccountAuthenticatorActivity {
                         .build();
         return GoogleSignIn.getClient(this, signInOptions);
     }
-
-    public void doLogin(View v){//Função evocado quando é clicado no botão de login
+    //Função evocado quando é clicado no botão de login
+    public void doLogin(View v){
         EditText userED = (EditText) findViewById(R.id.user);
         user = userED.getText().toString();
 
@@ -119,7 +136,6 @@ public class Login extends AccountAuthenticatorActivity {
          Log.e("coisa","coisa");
         };
             VolleyRequest.getToken(user, password, new VolleyCallback() {
-                //Funções responsaveis que ocorrem depois da resposta do servidor
                 @Override
                 public void onSuccess(JSONArray result) {
 
@@ -169,6 +185,7 @@ public class Login extends AccountAuthenticatorActivity {
     }
     public static Context getContext(){return context;}
     public static String getToken(){return token;}
+    //Método evocado quando o user acaba de escolher a conta da google drive
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -183,6 +200,8 @@ public class Login extends AccountAuthenticatorActivity {
                     // Build a drive resource client.
                     mDriveResourceClient =
                             Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
+                    createAllCSVFiles();
+
                   /* createCsvFileGps(Environment.getExternalStorageDirectory()+DBManager.getFolderDatabase(),
                                     "logViagem.csv",getLogViagem(1));
                     saveAnyFileToDrive(this,mDriveResourceClient,
@@ -212,6 +231,7 @@ public class Login extends AccountAuthenticatorActivity {
                 break;
         }
     }
+    //Método que recebe um ficheiro do telemovel e cria um ficheiro na drive
     public static void saveAnyFileToDrive(Activity activity,DriveResourceClient mDriveResourceClient, File file,
                                           String driveFileName, String driveFileMimeType) {
         final Task<DriveFolder> rootFolderTask = mDriveResourceClient.getRootFolder();
@@ -244,9 +264,11 @@ public class Login extends AccountAuthenticatorActivity {
                     Log.e(TAG, "Unable to create file", e);
                 });
     }
+    //Método que verifica se existe o campo "last update time" no shredPref
     public boolean existUpdateDate(SharedPreferences sharedPreferences){
         return sharedPreferences.contains(LASTUPDATETIME);
     }
+    //Método que verifica se foi feito upload no último dia
     public static boolean  isToUpdateDrive(String lastUpdateDate){
         Date lastUpdateDate_ = null,currentDate = null;String _currentDate = null;
         try {
@@ -267,16 +289,19 @@ public class Login extends AccountAuthenticatorActivity {
     public static DriveResourceClient getmDriveResourceClient() {
         return mDriveResourceClient;
     }
-
+    //Verifica se é fazer upload do base de dados para a fazer
+    //Vê se existe o campo no sharedPref com a data do ultimo upload se não existir então
+    //cria esse campo e faz o login e upload. Se existir o campo então verifica se já foi feito
+    //upload no ultimo dia.
     public void checkUploadDrive(SharedPreferences sharedPreferences){
         new Thread(()->{
             if(existUpdateDate(sharedPreferences)){
                 if(isToUpdateDrive(sharedPreferences.getString(LASTUPDATETIME,null))){
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString(LASTUPDATETIME,new SimpleDateFormat("dd/MM/yyyy").
-                            format(Calendar.getInstance().getTime()));
+                            format(Calendar.getInstance().getTime()));// Atualiza o valor do campo "last update time" com a dia de hoje
                     editor.commit();
-                    signIn();
+                    signIn();//Obtem a informação sobre a conta da drive
                 }else{
                     changeToMyTuxis();
                 }
@@ -356,11 +381,13 @@ public class Login extends AccountAuthenticatorActivity {
             }
 
             db = DBManager.getDBManager();
-/*
+
             if(isToUpdateDB()){
                 updateDB();
             }
-            SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
+
+
+     /*       SharedPreferences sPref = getSharedPreferences("loginInfo",MODE_PRIVATE);
             if(isToUpdateDrive(sPref.getString("lastUpdateDate",null))){
                 new Thread(new Runnable() {
                     @Override
@@ -406,6 +433,27 @@ public class Login extends AccountAuthenticatorActivity {
                         pedePermissoes();
                     }
                 }).show();
+    }
+    public void createAllCSVFiles(){
+        ArrayList<LogInfo> viagens = getAllViagem();
+        File file = new File(Environment.getExternalStorageDirectory()+DBManager.getFolderDatabase()+"/logViagem.csv");
+            Log.e("create",file.getAbsolutePath());
+            for (LogInfo viagem: viagens){
+                ArrayList<?> log = getLogViagem(viagem.getId());
+                if(log.size()>0 ){
+                    createCsvFileGps(this,Environment.getExternalStorageDirectory()+DBManager.getFolderDatabase(),
+                            file,log,"," + viagem.getBatInicial()+" , "+viagem.getBatFinal());
+                }
+            }
+            ArrayList<LogInfo> deslocacoes = getAllDeslocacao();
+          for (LogInfo deslocacao: deslocacoes){
+                ArrayList<?> log = getLogDeslocacao(deslocacao.getId());
+                if(log.size()>0 ){
+                    createCsvFileGps(this,Environment.getExternalStorageDirectory()+DBManager.getFolderDatabase(),
+                            file,getLogDeslocacao(deslocacao.getId()),"," + deslocacao.getBatInicial()+" , "+deslocacao.getBatFinal());
+                }
+            }
+
     }
 
 }

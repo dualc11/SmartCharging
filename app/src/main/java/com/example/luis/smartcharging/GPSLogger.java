@@ -2,6 +2,8 @@ package com.example.luis.smartcharging;
 
 import java.util.Date;
 
+import static com.example.luis.smartcharging.DBManager.getViagem;
+
 /**
  * Created by claudio on 04-07-2018.
  */
@@ -41,7 +43,6 @@ public class GPSLogger {
         this.data = data;
         this.viagemId = viagemId;
     }
-
     public int getId() {
         return id;
     }
@@ -74,13 +75,13 @@ public class GPSLogger {
         this.data = data;
     }
 
-    public int getViagemId() {
-        return viagemId;
-    }
 
     public void setViagemId(int viagemId) {
         this.viagemId = viagemId;
     }
 
-
+    @Override
+    public String toString() {
+        return longitude+" , "+latitude+" , "+altitude+" , "+data.getTime()+" , "+viagemId;
+    }
 }

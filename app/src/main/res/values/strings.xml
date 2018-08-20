@@ -43,7 +43,7 @@
     <string name = "bat_error">Por favor insira uma percentagem de bateria válida!</string>
 
     <!--  MAP  ACTIVITY -->
-    <string name = "distance_travelled">Distance travelled during the tour This value is an estimation based on real time data about your location</string>
-    <string name = "battery_autonomy">Battery autonomy This value is an estimation based on real time data about your location</string>
+    <string name = "distance_travelled">Distance travelled during the tour , This value is an estimation based on real time data about your location</string>
+    <string name = "battery_autonomy">Battery autonomy ,This value is an estimation based on real time data about your location</string>
 
 </resources>

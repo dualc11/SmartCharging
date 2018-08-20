@@ -1,5 +1,6 @@
 package com.example.luis.smartcharging;
 
+import android.app.Activity;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -22,8 +23,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,6 +39,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+
+import static com.example.luis.smartcharging.Login.getContext;
+import static com.example.luis.smartcharging.Login.getmDriveResourceClient;
+import static com.example.luis.smartcharging.Login.saveAnyFileToDrive;
 
 public class DBManager {
     private static int newVersion = 5;
@@ -1071,6 +1078,60 @@ public class DBManager {
         return viagem;
     }
 
+    public static synchronized ArrayList<LogInfo> getAllViagem() {
+        ArrayList<LogInfo> res = new ArrayList<>();
+        String[] col = new String[]{"*"};
+        Cursor cursor = db.query(TABLE_VIAGEM_INFO, null,null ,
+                null, null, null, null);
+        LogInfo viagem = null;
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(0);
+            int batInicial = cursor.getInt(1);
+            int batFinal = cursor.getInt(2);
+            float distanciaKm = cursor.getFloat(3);
+            String data = cursor.getString(4);
+            int tucId = cursor.getInt(5);
+            int utilizacaoId = cursor.getInt(6);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            Date date = new Date();
+            try {
+                date = format.parse(data);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            viagem = new LogInfo(id, batInicial, batFinal, distanciaKm, date, tucId, utilizacaoId, TYPE_VIAGEM);
+            res.add(viagem);
+        }
+        return res;
+    }
+    public static synchronized ArrayList<LogInfo> getAllDeslocacao() {
+        ArrayList<LogInfo> res = new ArrayList<>();
+        String[] col = new String[]{"*"};
+        Cursor cursor = db.query(TABLE_DESLOCACAO, null,null ,
+                null, null, null, null);
+        LogInfo viagem = null;
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(0);
+            int batInicial = cursor.getInt(1);
+            int batFinal = cursor.getInt(2);
+            float distanciaKm = cursor.getFloat(3);
+            String data = cursor.getString(4);
+            int tucId = cursor.getInt(5);
+            int utilizacaoId = cursor.getInt(6);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
+            Date date = new Date();
+            try {
+                date = format.parse(data);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            viagem = new LogInfo(id, batInicial, batFinal, distanciaKm, date, tucId, utilizacaoId, TYPE_VIAGEM);
+            res.add(viagem);
+        }
+        return res;
+    }
     public static synchronized LogInfo getDeslocacao(int deslocacaoId) {
         ArrayList<GPSLogger> res = new ArrayList<>();
         Cursor cursor = db.query(TABLE_DESLOCACAO, null, VIAGEM_ID + " = '" + deslocacaoId + "'",
@@ -1182,7 +1243,7 @@ public class DBManager {
         db.execSQL(query);
     }
 
-    public static boolean existeCarro(int id) {
+    public synchronized static boolean existeCarro(int id) {
         String[] col = new String[]{ID_CARRO};
         String[] where = new String[]{ID_CARRO + "==" + ID_CARRO};
         Cursor cursor = db.query(TABELA_CARROS, col, ID_CARRO + "= '" + id + "'",
@@ -1272,7 +1333,36 @@ public class DBManager {
         }
         return listaGpsLoggers;
     }
+    public static ArrayList<GPSLogger> getAllLogViagem() {
+        ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
+        String[] Select = {TABELA_LOG_VIAGEM + "." + ID_LOG_VIAGEM, TABELA_LOG_VIAGEM + "." + LONGITUDE, TABELA_LOG_VIAGEM + "." + ALTITUDE,
+                TABELA_LOG_VIAGEM + "." + DATAEHORA, TABELA_LOG_VIAGEM + "." + VIAGEMID,
+                TABELA_LOG_VIAGEM + "." + LATITUDE_LOG_VIAGEM};
+        String From = TABELA_LOG_VIAGEM;
+        String Where = null;
+        Cursor clistaGpsLogger = db.query(From, Select, Where, null, null, null, null);
+        while (clistaGpsLogger.moveToNext()) {
+            GPSLogger logViagem = new GPSLogger();
 
+
+            logViagem.setId(clistaGpsLogger.getInt(0));
+            logViagem.setLongitude(clistaGpsLogger.getFloat(1));
+            logViagem.setAltitude(clistaGpsLogger.getFloat(2));
+            String stringData = clistaGpsLogger.getString(3);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date date = format.parse(stringData);
+                logViagem.setData(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            logViagem.setViagemId(clistaGpsLogger.getInt(4));
+            logViagem.setLatitude(clistaGpsLogger.getFloat(5));
+            listaGpsLoggers.add(logViagem);
+
+        }
+        return listaGpsLoggers;
+    }
     public static ArrayList<GPSLogger> getLogDeslocacao(int deslocacaoId) {
         ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
 
@@ -1282,6 +1372,39 @@ public class DBManager {
                 TABELA_LOG_DESLOCACAO + "." + LATITUDE_LOG_DESLOCACAO};
         String From = TABELA_LOG_DESLOCACAO;
         String Where = TABELA_LOG_DESLOCACAO + "." + DESLOCACAOID_LOG_DESLOCACAO + "==" + deslocacaoId;
+        Cursor clistaGpsLogger = db.query(From, Select, Where, null, null, null, null);
+        while (clistaGpsLogger.moveToNext()) {
+            GPSLogger logDeslocacao = new GPSLogger();
+
+
+            logDeslocacao.setId(clistaGpsLogger.getInt(0));
+            logDeslocacao.setLongitude(clistaGpsLogger.getFloat(1));
+            logDeslocacao.setAltitude(clistaGpsLogger.getFloat(2));
+            String stringData = clistaGpsLogger.getString(3);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date date = format.parse(stringData);
+                logDeslocacao.setData(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            logDeslocacao.setViagemId(clistaGpsLogger.getInt(4));
+            logDeslocacao.setLatitude(clistaGpsLogger.getFloat(5));
+            listaGpsLoggers.add(logDeslocacao);
+
+        }
+        return listaGpsLoggers;
+    }
+
+    public static ArrayList<GPSLogger> getLogAllDeslocacao() {
+        ArrayList<GPSLogger> listaGpsLoggers = new ArrayList<>();
+
+
+        String[] Select = {TABELA_LOG_DESLOCACAO + "." + ID_LOG_DESLOCACAO, TABELA_LOG_DESLOCACAO + "." + LONGITUDE, TABELA_LOG_DESLOCACAO + "." + ALTITUDE,
+                TABELA_LOG_DESLOCACAO + "." + DATAEHORA, TABELA_LOG_DESLOCACAO + "." + DESLOCACAOID_LOG_DESLOCACAO,
+                TABELA_LOG_DESLOCACAO + "." + LATITUDE_LOG_DESLOCACAO};
+        String From = TABELA_LOG_DESLOCACAO;
+        String Where = null;
         Cursor clistaGpsLogger = db.query(From, Select, Where, null, null, null, null);
         while (clistaGpsLogger.moveToNext()) {
             GPSLogger logDeslocacao = new GPSLogger();
@@ -1335,23 +1458,24 @@ public class DBManager {
         return DATABASE_NAME;
     }
 
-    public static void createCsvFileGps(String path,String fileName,ArrayList<?> info) {
-        try {
-        File file = new File(path+fileName);
-        PrintWriter writer = new PrintWriter(file);
-        ArrayList<GPSLogger> gpsLoggers = (ArrayList<GPSLogger>) info;
-        Collection<String[]> data = new ArrayList<>();
-        for (GPSLogger log: gpsLoggers) {
-            writer.println(
-                    String.valueOf(log.getLongitude())+","+
-                    String.valueOf(log.getLatitude())+","+
-                    String.valueOf(log.getAltitude())+","+
-                    String.valueOf(log.getData().toString())+","+
-                    String.valueOf(log.getViagemId()));
-        }
-            writer.close();
-        } catch (IOException e) {
+    public static void createCsvFileGps(Activity activity,String fileDriveName,File file,ArrayList<?> info,String extra) {
+
+            try {
+                FileWriter fw = new FileWriter(file,true);
+                BufferedWriter bw = new BufferedWriter(fw);
+
+                for (Object obj: info) {
+                    bw.write(
+                        obj.toString()+extra+"\n"
+                );
+            }
+                bw.flush();
+                bw.close();
+            } catch (IOException e) {
             e.printStackTrace();
         }
+
+           // saveAnyFileToDrive(activity,getmDriveResourceClient(),file,fileDriveName,"text/csv");
+
     }
 }

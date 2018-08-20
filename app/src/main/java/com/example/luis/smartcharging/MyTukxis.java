@@ -1,27 +1,13 @@
 package com.example.luis.smartcharging;
 
-import android.Manifest;
-import android.accounts.AccountManager;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.PermissionChecker;
+
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -41,13 +27,6 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
-import static com.example.luis.smartcharging.DBManager.isToUpdateDB;
-import static com.example.luis.smartcharging.DBManager.updateDB;
-import static com.example.luis.smartcharging.Login.getmDriveResourceClient;
 
 import static com.example.luis.smartcharging.Login.*;
 import static com.example.luis.smartcharging.VolleyRequest.loadCarros;
@@ -91,7 +70,8 @@ public class MyTukxis extends AppCompatActivity{
         qrScan = new IntentIntegrator(this);
         db = DBManager.getDBManager();
     }
-    public void updateUserInfo(){//Atualiza a informação sobre o utilizador(Nome do utilizador, id do utilizador)
+    //Atualiza as varias locais com os valores do nome userId
+    public void updateUserInfo(){
         new Thread(new Runnable() {
             @Override
             public void run() {

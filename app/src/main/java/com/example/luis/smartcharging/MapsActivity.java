@@ -170,12 +170,12 @@ public class MapsActivity extends MyTukxis implements OnMapReadyCallback {
             percurso = new Percurso(5,"-" ,"-",0f);
         myTripInfo.add("Distination"+","
                 +percurso.getOrigem()+" - "+percurso.getDestino()+","+
-                "Back and forth around "+percurso.getDistancia());
+                "Back and forth around ,"+percurso.getDistancia());
         myTripInfo.add(getResources().getString(R.string.distance_travelled)+
-                " 15Km");
+                " ,15Km");
 
         myTripInfo.add(getResources().getString(R.string.battery_autonomy)+
-                "25Km");
+                ",25Km");
 
 
         listaAdapter = new currentTourListAdapter(this,R.layout.current_tour,myTripInfo);
